@@ -14,7 +14,6 @@ export default function Home() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background text-foreground">
-      {/* Full page background image and overlay */}
       <div className="fixed inset-0 w-full h-full -z-10">
         <img
           src="/landing/landing-01.jpg"
@@ -30,19 +29,16 @@ export default function Home() {
       <section className="relative w-full">
         <div className="relative z-10">
           <Hero />
-
-          {/* Show How It Works only for non-authenticated users */}
+          <div className="h-4 sm:h-6" />
           {!isSignedIn && <HowItWorks />}
 
-          {/* Features Section - show for all users */}
           <Features />
+          <div className="h-16 sm:h-24" />
         </div>
       </section>
 
-      {/* Testimonials - show only for non-authenticated users */}
       {!isSignedIn && <Testimonials />}
 
-      {/* CTA Section */}
       <CTASection />
 
       <Footer />

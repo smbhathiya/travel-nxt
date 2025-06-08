@@ -23,8 +23,7 @@ export function Hero() {
         // Content for authenticated users
         <>
           <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl max-w-3xl px-4">
-            Ready for Your Next{" "}
-            <span className="text-primary">Adventure</span>?
+            Ready for Your Next <span className="text-primary">Adventure</span>?
           </h1>
           <p className="max-w-2xl mx-auto text-lg sm:text-xl text-muted-foreground px-4">
             Find destinations perfectly matched to your interests and travel
