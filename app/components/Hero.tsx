@@ -8,15 +8,23 @@ export function Hero() {
   const { isSignedIn } = useAuth();
 
   return (
-    <div className="relative container max-w-6xl mx-auto flex flex-col items-center justify-center gap-6 py-24 sm:py-32 md:py-40 text-center">
-      <div className="absolute -right-20 top-12 h-72 w-72 rounded-full bg-primary/20 blur-3xl"></div>
-      <div className="absolute -left-20 bottom-12 h-72 w-72 rounded-full bg-primary/20 blur-3xl"></div>
+    <div className="relative container max-w-6xl mx-auto flex flex-col items-center justify-center gap-6 py-20 sm:py-24 md:py-28 text-center">
+      <div className="absolute inset-0 w-full h-full -z-10">
+        <img
+          src="/landing/landing-01.jpg"
+          alt="Travel background"
+          className="w-full h-full object-cover opacity-20 rounded-xl"
+          draggable={false}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/50 to-background/80 rounded-xl" />
+      </div>
 
       {isSignedIn ? (
         // Content for authenticated users
         <>
           <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl max-w-3xl px-4">
-            Ready for Your Next <span className="text-primary">Adventure</span>?
+            Ready for Your Next{" "}
+            <span className="text-primary">Adventure</span>?
           </h1>
           <p className="max-w-2xl mx-auto text-lg sm:text-xl text-muted-foreground px-4">
             Find destinations perfectly matched to your interests and travel

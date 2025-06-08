@@ -13,21 +13,30 @@ export default function Home() {
   const { isSignedIn } = useAuth();
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="relative flex flex-col min-h-screen bg-background text-foreground">
+      {/* Full page background image and overlay */}
+      <div className="fixed inset-0 w-full h-full -z-10">
+        <img
+          src="/landing/landing-01.jpg"
+          alt="Travel background"
+          className="w-full h-full object-cover opacity-20"
+          draggable={false}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/50 to-background/80" />
+      </div>
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden w-full">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center opacity-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/50 to-background/80"></div>
+      <section className="relative w-full">
+        <div className="relative z-10">
+          <Hero />
 
-        <Hero />
+          {/* Show How It Works only for non-authenticated users */}
+          {!isSignedIn && <HowItWorks />}
 
-        {/* Show How It Works only for non-authenticated users */}
-        {!isSignedIn && <HowItWorks />}
-
-        {/* Features Section - show for all users */}
-        <Features />
+          {/* Features Section - show for all users */}
+          <Features />
+        </div>
       </section>
 
       {/* Testimonials - show only for non-authenticated users */}
