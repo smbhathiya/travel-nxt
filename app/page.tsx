@@ -5,7 +5,6 @@ import { Footer } from "./components/Footer";
 import { Hero } from "./components/Hero";
 import { HowItWorks } from "./components/HowItWorks";
 import { Features } from "./components/Features";
-import { PopularDestinations } from "./components/PopularDestinations";
 import { Testimonials } from "./components/Testimonials";
 import { CTASection } from "./components/CTASection";
 import { useAuth } from "@clerk/nextjs";
@@ -30,9 +29,6 @@ export default function Home() {
         {/* Features Section - show for all users */}
         <Features />
       </section>
-
-      {/* Popular Destinations Section */}
-      <PopularDestinations />
 
       {/* Testimonials - show only for non-authenticated users */}
       {!isSignedIn && <Testimonials />}

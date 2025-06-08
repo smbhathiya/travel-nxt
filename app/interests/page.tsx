@@ -7,16 +7,16 @@ import { useRouter } from "next/navigation";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import {
-  Beach,
+  Waves,
   Mountain,
-  Building,
-  Utensils,
+  Landmark,
+  UtensilsCrossed,
   Palette,
   Camera,
   Tent,
-  TreePine,
+  Trees,
   Users,
-  Parkade,
+  Building2,
 } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 
@@ -33,7 +33,7 @@ export default function InterestsPage() {
   const router = useRouter();
 
   const interests: Interest[] = [
-    { id: "beach", name: "Beaches", icon: <Beach className="h-6 w-6" /> },
+    { id: "beach", name: "Beaches", icon: <Waves className="h-6 w-6" /> },
     {
       id: "mountains",
       name: "Mountains",
@@ -42,9 +42,13 @@ export default function InterestsPage() {
     {
       id: "culture",
       name: "Cultural Sites",
-      icon: <Building className="h-6 w-6" />,
+      icon: <Landmark className="h-6 w-6" />,
     },
-    { id: "food", name: "Culinary", icon: <Utensils className="h-6 w-6" /> },
+    {
+      id: "food",
+      name: "Culinary",
+      icon: <UtensilsCrossed className="h-6 w-6" />,
+    },
     {
       id: "arts",
       name: "Arts & Museums",
@@ -56,7 +60,7 @@ export default function InterestsPage() {
       icon: <Camera className="h-6 w-6" />,
     },
     { id: "camping", name: "Camping", icon: <Tent className="h-6 w-6" /> },
-    { id: "nature", name: "Nature", icon: <TreePine className="h-6 w-6" /> },
+    { id: "nature", name: "Nature", icon: <Trees className="h-6 w-6" /> },
     {
       id: "festivals",
       name: "Festivals & Events",
@@ -65,7 +69,7 @@ export default function InterestsPage() {
     {
       id: "citylife",
       name: "Urban Adventures",
-      icon: <Parkade className="h-6 w-6" />,
+      icon: <Building2 className="h-6 w-6" />,
     },
   ];
 
