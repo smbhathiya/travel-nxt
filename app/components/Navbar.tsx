@@ -1,9 +1,18 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Globe } from "lucide-react";
+import { Globe, Menu, X } from "lucide-react";
 import { ModeToggle } from "./mode-toggle";
+import { useAuth, UserButton } from "@clerk/nextjs";
+import { useState } from "react";
 
 export function Navbar() {
+  const { isSignedIn } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container max-w-6xl mx-auto px-4 flex h-16 items-center justify-between">
@@ -13,17 +22,111 @@ export function Navbar() {
             Smart<span className="text-primary">Traveller</span>
           </span>
         </Link>
+
+        {/* Desktop Navigation */}
+        {isSignedIn ? (
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link
+              href="/dashboard"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/find-destinations"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Find Destinations
+            </Link>
+            <Link
+              href="/previous-trips"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              My Trips
+            </Link>
+          </nav>
+        ) : null}
+
         {/* Right side: Buttons */}
         <div className="flex items-center space-x-4">
           <ModeToggle />
-          <Button variant="outline" size="sm">
-            Sign In
-          </Button>
-          <Button className="hidden sm:flex" size="sm">
-            Get Started
-          </Button>
+
+          {isSignedIn ? (
+            <UserButton afterSignOutUrl="/" />
+          ) : (
+            <>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/sign-in">Sign In</Link>
+              </Button>
+              <Button className="hidden sm:flex" size="sm" asChild>
+                <Link href="/sign-up">Get Started</Link>
+              </Button>
+            </>
+          )}
+
+          {/* Mobile menu button */}
+          <button
+            className="ml-2 md:hidden p-2 rounded-md hover:bg-muted"
+            onClick={toggleMobileMenu}
+          >
+            {mobileMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </button>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden p-4 pt-0 pb-5 border-b bg-background">
+          <nav className="flex flex-col space-y-3">
+            {isSignedIn ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="px-3 py-2 rounded-md hover:bg-muted"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href="/find-destinations"
+                  className="px-3 py-2 rounded-md hover:bg-muted"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Find Destinations
+                </Link>
+                <Link
+                  href="/previous-trips"
+                  className="px-3 py-2 rounded-md hover:bg-muted"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  My Trips
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
+                  className="px-3 py-2 rounded-md hover:bg-muted"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="px-3 py-2 rounded-md hover:bg-muted"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
