@@ -9,12 +9,19 @@ export function Navbar() {
       <div className="container max-w-6xl mx-auto px-4 flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
           <Globe className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-          <span className="text-lg sm:text-xl font-bold">Smart<span className="text-primary">Traveller</span></span>
+          <span className="text-lg sm:text-xl font-bold">
+            Smart<span className="text-primary">Traveller</span>
+          </span>
         </Link>
-        {/* Right side: Theme switcher and Sign In */}
+        {/* Right side: Buttons */}
         <div className="flex items-center space-x-4">
           <ModeToggle />
-          <Button variant="outline">Sign In</Button>
+          <Button variant="outline" size="sm">
+            Sign In
+          </Button>
+          <Button className="hidden sm:flex" size="sm">
+            Get Started
+          </Button>
         </div>
       </div>
     </header>

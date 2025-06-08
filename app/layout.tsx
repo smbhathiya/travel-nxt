@@ -14,9 +14,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Smart Traveller - Discover Your Next Adventure",
+  title: "Smart Traveller - AI-Powered Travel Recommendations",
   description:
-    "Find your perfect travel destination with personalized recommendations based on your preferences.",
+    "Get personalized travel recommendations based on your interests, previous destinations, and optimal weather conditions for your perfect adventure.",
+  keywords: [
+    "travel",
+    "AI",
+    "personalized recommendations",
+    "weather forecast",
+    "travel planning",
+    "destination discovery",
+  ],
+  openGraph: {
+    title: "Smart Traveller - AI-Powered Travel Recommendations",
+    description:
+      "AI-powered travel recommendations based on your interests, past travels, and weather conditions",
+    type: "website",
+    locale: "en_US",
+  },
 };
 
 export default function RootLayout({
