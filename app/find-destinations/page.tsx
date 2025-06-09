@@ -44,7 +44,7 @@ export default function FindDestinationsPage() {
       <Navbar />
       <div className="flex-1 pb-12">
         <div className="bg-white py-12">
-          <div className="container max-w-3xl mx-auto px-4">
+          <div className="container w-full mx-auto px-4">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold mb-2">
                 Find Your Perfect Destination
@@ -54,7 +54,7 @@ export default function FindDestinationsPage() {
                 travel history
               </p>
             </div>
-            <Card className="mb-6">
+            <Card className="mb-6 max-w-3xl justify-center mx-auto">
               <CardContent className="pt-6">
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="flex flex-col sm:flex-row gap-3">
