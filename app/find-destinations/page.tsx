@@ -40,10 +40,10 @@ export default function FindDestinationsPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
       <div className="flex-1 pb-12">
-        <div className="bg-white py-12">
+        <div className="bg-background py-12">
           <div className="container w-full mx-auto px-4">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold mb-2">

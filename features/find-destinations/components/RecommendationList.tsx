@@ -12,7 +12,7 @@ export function RecommendationList({
   recommendations: Recommendation[];
 }) {
   return (
-    <div className="container w-full mx-auto px-4 mt-12">
+    <div className="container max-w-7xl mx-auto px-4 mt-12">
       <h2 className="text-2xl font-bold mb-10 text-center">
         Recommended Destinations for You
       </h2>
@@ -21,18 +21,22 @@ export function RecommendationList({
         {recommendations.map((recommendation) => (
           <Card
             key={recommendation.id}
-            className="overflow-hidden border-0 rounded-lg shadow-md"
+            className="overflow-hidden rounded-lg shadow-sm border"
           >
             {/* Card Image with Top Match Badge */}
             <div className="relative">
               {/* Match Badge */}
-              <div className="absolute top-3 left-3 z-10 flex items-center gap-1 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
-                <span>{recommendation.matchScore}%</span>
+              <div className="absolute top-3 left-3 z-10 flex items-center gap-1">
+                <Badge variant="default" className="px-3 py-1 rounded-full">
+                  {recommendation.matchScore}%
+                </Badge>
               </div>
 
               {/* Category Badge */}
-              <div className="absolute top-3 right-3 z-10 bg-white/90 text-xs font-semibold px-3 py-1 rounded-full">
-                {recommendation.category}
+              <div className="absolute top-3 right-3 z-10">
+                <Badge variant="secondary" className="px-3 py-1 rounded-full">
+                  {recommendation.category}
+                </Badge>
               </div>
 
               {/* Image */}
@@ -52,7 +56,7 @@ export function RecommendationList({
               <div className="flex justify-between items-start mb-1">
                 <h3 className="text-xl font-bold">{recommendation.name}</h3>
                 <div className="flex items-center">
-                  <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1" />
+                  <Star className="h-4 w-4 text-amber-500 fill-amber-500 mr-1" />
                   <span className="text-sm font-medium">
                     {(4.5 + ((recommendation.id * 0.1) % 0.5)).toFixed(1)}
                   </span>
@@ -78,14 +82,14 @@ export function RecommendationList({
                     .map((forecast, idx) => (
                       <div
                         key={idx}
-                        className="bg-muted p-2 rounded-md text-center"
+                        className="bg-muted/50 p-2 rounded-md text-center"
                       >
                         <p className="text-xs text-muted-foreground">
                           {forecast.month}
                         </p>
                         <div className="my-1">
                           {forecast.icon && (
-                            <forecast.icon className="h-4 w-4 mx-auto text-primary" />
+                            <forecast.icon className="h-4 w-4 mx-auto" />
                           )}
                         </div>
                         <p className="text-sm font-medium">
