@@ -25,7 +25,6 @@ export async function getWeatherForecasts(country: string) {
     );
     const weatherData = await weatherResponse.json();
 
-    // Return weather forecasts for the next 3 months (mock data based on current weather)
     return [
       {
         month: new Date().toLocaleString("default", { month: "long" }),
@@ -34,7 +33,6 @@ export async function getWeatherForecasts(country: string) {
         humidity: `${weatherData.main?.humidity || 50}%`,
         windSpeed: `${Math.round(weatherData.wind?.speed || 5)} m/s`,
       },
-      // Add more months as needed
     ];
   } catch (error) {
     console.error("Error fetching weather data:", error);
@@ -55,7 +53,6 @@ export async function getDestinationsByCountry(country: string) {
   }
 
   try {
-    // Initialize GoogleGenerativeAI the same way as your API route
     const genAI = new GoogleGenerativeAI(geminiApiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `Generate a list of 5 popular tourist destinations in ${country}. 
@@ -81,12 +78,10 @@ export async function getDestinationsByCountry(country: string) {
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text(); // Parse the JSON response
+    const text = response.text(); 
     try {
-      // Fix common JSON parsing issues before attempting to parse
       let jsonText = text.trim();
 
-      // Find the first [ and last ] to extract just the JSON array
       const startIdx = jsonText.indexOf("[");
       const endIdx = jsonText.lastIndexOf("]");
 
@@ -94,16 +89,13 @@ export async function getDestinationsByCountry(country: string) {
         jsonText = jsonText.substring(startIdx, endIdx + 1);
       }
 
-      // Handle possible markdown code blocks (```json ... ```)
       if (jsonText.includes("```")) {
-        // Extract content between the first ``` and the last ```
         const codeBlockStart = jsonText.indexOf("```");
         let codeBlockContent = jsonText.substring(codeBlockStart + 3);
         const codeBlockEnd = codeBlockContent.lastIndexOf("```");
 
         if (codeBlockEnd >= 0) {
           codeBlockContent = codeBlockContent.substring(0, codeBlockEnd).trim();
-          // Remove the language identifier if present (e.g., ```json)
           const firstLineBreak = codeBlockContent.indexOf("\n");
           if (firstLineBreak > 0) {
             codeBlockContent = codeBlockContent
@@ -117,20 +109,18 @@ export async function getDestinationsByCountry(country: string) {
       console.log("Cleaned JSON text:", jsonText);
       const rawDestinations = JSON.parse(jsonText);
 
-      // Transform the raw data to match our Recommendation type
       return Array.isArray(rawDestinations)
         ? rawDestinations.map((dest, index) => ({
             id: Date.now() + index,
             name: dest.name || `Destination ${index + 1}`,
             country: country,
             description: dest.description || "No description available.",
-            matchScore: Math.floor(80 + Math.random() * 20), // Random score between 80-99
-            image: "/landing/landing-01.jpg", // Default image
+            matchScore: Math.floor(80 + Math.random() * 20), 
+            image: "/landing/landing-01.jpg", 
             category: dest.bestTimeToVisit
               ? "Best: " + dest.bestTimeToVisit
               : "Travel",
             weatherForecasts: [],
-            // Additional data we'll keep but won't be used by the existing UI
             activities: dest.activities || [],
             bestTimeToVisit: dest.bestTimeToVisit,
           }))
@@ -139,11 +129,8 @@ export async function getDestinationsByCountry(country: string) {
       console.error("Error parsing Gemini response:", parseError);
       console.log("Raw response:", text);
 
-      // Attempt to extract any partial data from the response
       try {
-        // Try to extract partial data from the response using regex
         const nameMatch = /\"name\":\s*\"([^\"]+)\"/g;
-        // Only extract names for basic fallback
         const names = [];
         let match;
         while ((match = nameMatch.exec(text)) !== null) {
@@ -151,7 +138,6 @@ export async function getDestinationsByCountry(country: string) {
         }
 
         if (names.length > 0) {
-          // We found at least some destination names, create basic recommendations
           return names.map((name, index) => ({
             id: Date.now() + index,
             name: name,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search } from "lucide-react";
@@ -22,6 +22,28 @@ export default function FindDestinationsPage() {
   const [showRecommendations, setShowRecommendations] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedHistory = localStorage.getItem("searchHistory");
+      if (savedHistory) {
+        try {
+          const parsedHistory = JSON.parse(savedHistory);
+          if (Array.isArray(parsedHistory)) {
+            setSearchHistory(parsedHistory);
+          }
+        } catch (e) {
+          console.error("Error parsing search history:", e);
+        }
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && searchHistory.length > 0) {
+      localStorage.setItem("searchHistory", JSON.stringify(searchHistory));
+    }
+  }, [searchHistory]);
+
   const userProfile = {
     interests: [],
     previousDestinations: [],
@@ -35,21 +57,17 @@ export default function FindDestinationsPage() {
 
     setIsLoading(true);
     try {
-      // Use the new Gemini-powered server action to get destinations by country
       const recs = await getDestinationsByCountry(country);
       console.log("Received destinations:", recs);
 
-      // Add to search history if it's not already there and we got results
       if (recs && recs.length > 0 && !searchHistory.includes(country)) {
-        setSearchHistory((prev) => [country, ...prev].slice(0, 5)); // Keep only last 5 searches
+        setSearchHistory((prev) => [country, ...prev].slice(0, 5));
       }
 
-      // Set recommendations and show results section
       setRecommendations(recs || []);
       setShowRecommendations(true);
     } catch (error) {
       console.error("Error fetching recommendations:", error);
-      // Fallback: show no recommendations if error
       setRecommendations([]);
     } finally {
       setIsLoading(false);
@@ -101,14 +119,26 @@ export default function FindDestinationsPage() {
                       </Button>
                     </div>
                   </div>{" "}
-                </form>
-
+                </form>{" "}
                 {/* Recent Searches */}
                 {searchHistory.length > 0 && (
                   <div className="mt-4">
-                    <p className="text-sm font-medium text-muted-foreground mb-2">
-                      Recent searches:
-                    </p>
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Recent searches:
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-muted-foreground hover:text-destructive h-auto py-1"
+                        onClick={() => {
+                          setSearchHistory([]);
+                          localStorage.removeItem("searchHistory");
+                        }}
+                      >
+                        Clear History
+                      </Button>
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {searchHistory.map((item, index) => (
                         <Button
@@ -117,7 +147,6 @@ export default function FindDestinationsPage() {
                           size="sm"
                           onClick={() => {
                             setCountry(item);
-                            // Execute search for this history item
                             (async () => {
                               setIsLoading(true);
                               try {
@@ -179,7 +208,6 @@ export default function FindDestinationsPage() {
                         <Button
                           variant="default"
                           onClick={() => {
-                            // Try one more time with the same country
                             setIsLoading(true);
                             getDestinationsByCountry(country)
                               .then((recs) => {

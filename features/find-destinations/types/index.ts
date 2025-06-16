@@ -2,7 +2,7 @@ export type WeatherForecast = {
   month: string;
   averageTemp: number;
   precipitation: number;
-  icon: React.ElementType; // Changed from React.ReactNode to React.ElementType
+  icon: React.ElementType; 
   conditions: string;
 };
 
@@ -15,7 +15,6 @@ export type Recommendation = {
   image: string;
   category: string;
   weatherForecasts: WeatherForecast[];
-  // New fields from Gemini API
   activities?: string[];
   bestTimeToVisit?: string;
 };
