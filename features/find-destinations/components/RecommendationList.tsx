@@ -62,44 +62,72 @@ export function RecommendationList({
                   </span>
                 </div>
               </div>
-
               {/* Country */}
               <p className="text-muted-foreground text-sm mb-3">
                 {recommendation.country}
               </p>
-
               {/* Description */}
               <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
                 {recommendation.description}
-              </p>
-
-              {/* Weather Forecast */}
-              <div className="mb-4">
-                <h4 className="text-sm font-medium mb-2">Weather Forecast</h4>
-                <div className="grid grid-cols-3 gap-2">
-                  {recommendation.weatherForecasts
-                    .slice(0, 3)
-                    .map((forecast, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-muted/50 p-2 rounded-md text-center"
-                      >
-                        <p className="text-xs text-muted-foreground">
-                          {forecast.month}
-                        </p>
-                        <div className="my-1">
-                          {forecast.icon && (
-                            <forecast.icon className="h-4 w-4 mx-auto" />
-                          )}
-                        </div>
-                        <p className="text-sm font-medium">
-                          {forecast.averageTemp}°C
-                        </p>
-                      </div>
-                    ))}
+              </p>{" "}
+              {/* Best Time To Visit */}
+              {recommendation.bestTimeToVisit && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium mb-2">
+                    Best Time to Visit
+                  </h4>
+                  <div className="bg-muted/50 p-2 rounded-md">
+                    <p className="text-sm">{recommendation.bestTimeToVisit}</p>
+                  </div>
                 </div>
-              </div>
-
+              )}
+              {/* Activities */}
+              {recommendation.activities &&
+                recommendation.activities.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2">Top Activities</h4>
+                    <ul className="list-disc pl-5 text-sm space-y-1">
+                      {recommendation.activities
+                        .slice(0, 3)
+                        .map((activity, idx) => (
+                          <li key={idx} className="text-muted-foreground">
+                            {activity}
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
+              {/* Weather Forecast - Only show if there are any */}
+              {recommendation.weatherForecasts &&
+                recommendation.weatherForecasts.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2">
+                      Weather Forecast
+                    </h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      {recommendation.weatherForecasts
+                        .slice(0, 3)
+                        .map((forecast, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-muted/50 p-2 rounded-md text-center"
+                          >
+                            <p className="text-xs text-muted-foreground">
+                              {forecast.month}
+                            </p>
+                            <div className="my-1">
+                              {forecast.icon && (
+                                <forecast.icon className="h-4 w-4 mx-auto" />
+                              )}
+                            </div>
+                            <p className="text-sm font-medium">
+                              {forecast.averageTemp}°C
+                            </p>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
               {/* Actions */}
               <div className="flex gap-2">
                 <Button asChild size="sm" className="flex-1">

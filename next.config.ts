@@ -4,11 +4,15 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        pathname: '**',
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "**",
       },
     ],
+  },
+  env: {
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    OPENWEATHER_API_KEY: process.env.OPENWEATHER_API_KEY,
   },
 };
 

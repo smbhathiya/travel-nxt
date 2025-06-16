@@ -15,4 +15,7 @@ export type Recommendation = {
   image: string;
   category: string;
   weatherForecasts: WeatherForecast[];
+  // New fields from Gemini API
+  activities?: string[];
+  bestTimeToVisit?: string;
 };

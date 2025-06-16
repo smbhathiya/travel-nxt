@@ -1,177 +1,106 @@
-import { Recommendation } from "../../find-destinations/types";
-import { Sun, Cloud, CloudRain, Droplets } from "lucide-react";
+"use server";
 
-// Note: The 'icon' property is now a component reference, not JSX. Render as <Icon className="..." /> in your UI.
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export async function getRecommendations(): Promise<Recommendation[]> {
-  // Simulate API call delay
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+export async function getWeatherForecasts(country: string) {
+  const apiKey = process.env.OPENWEATHER_API_KEY;
+  console.log("OPENWEATHER_API_KEY:", apiKey ? "present" : "undefined");
 
-  return [
-    {
-      id: 1,
-      name: "Kyoto",
-      country: "Japan",
-      description:
-        "Historical temples, traditional gardens, and authentic cultural experiences perfect for culture enthusiasts.",
-      matchScore: 98,
-      image: "/landing/landing-01.jpg",
-      category: "Cultural",
-      weatherForecasts: [
-        {
-          month: "June",
-          averageTemp: 28,
-          precipitation: 13,
-          icon: Sun,
-          conditions: "Warm & Humid",
-        },
-        {
-          month: "July",
-          averageTemp: 32,
-          precipitation: 18,
-          icon: Cloud,
-          conditions: "Hot & Humid",
-        },
-        {
-          month: "August",
-          averageTemp: 33,
-          precipitation: 14,
-          icon: CloudRain,
-          conditions: "Hot with Showers",
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Barcelona",
-      country: "Spain",
-      description:
-        "Stunning architecture, vibrant streets, and beautiful beaches, ideal for urban explorers.",
-      matchScore: 95,
-      image: "/landing/landing-01.jpg",
-      category: "Urban",
-      weatherForecasts: [
-        {
-          month: "June",
-          averageTemp: 26,
-          precipitation: 4,
-          icon: Sun,
-          conditions: "Warm & Sunny",
-        },
-        {
-          month: "July",
-          averageTemp: 29,
-          precipitation: 2,
-          icon: Sun,
-          conditions: "Hot & Dry",
-        },
-        {
-          month: "August",
-          averageTemp: 30,
-          precipitation: 5,
-          icon: Sun,
-          conditions: "Hot & Sunny",
-        },
-      ],
-    },
-    {
-      id: 3,
-      name: "Costa Rica",
-      country: "Costa Rica",
-      description:
-        "Lush rainforests, diverse wildlife, and incredible hiking opportunities for nature lovers.",
-      matchScore: 91,
-      image: "/landing/landing-01.jpg",
-      category: "Nature",
-      weatherForecasts: [
-        {
-          month: "June",
-          averageTemp: 26,
-          precipitation: 28,
-          icon: Droplets,
-          conditions: "Warm & Rainy",
-        },
-        {
-          month: "July",
-          averageTemp: 26,
-          precipitation: 25,
-          icon: Droplets,
-          conditions: "Warm & Rainy",
-        },
-        {
-          month: "August",
-          averageTemp: 26,
-          precipitation: 26,
-          icon: Droplets,
-          conditions: "Warm & Rainy",
-        },
-      ],
-    },
-    {
-      id: 4,
-      name: "Santorini",
-      country: "Greece",
-      description:
-        "Breathtaking views, white-washed buildings, and stunning sunsets perfect for couples and photographers.",
-      matchScore: 88,
-      image: "/landing/landing-01.jpg",
-      category: "Island",
-      weatherForecasts: [
-        {
-          month: "June",
-          averageTemp: 26,
-          precipitation: 1,
-          icon: Sun,
-          conditions: "Warm & Dry",
-        },
-        {
-          month: "July",
-          averageTemp: 27,
-          precipitation: 0,
-          icon: Sun,
-          conditions: "Hot & Dry",
-        },
-        {
-          month: "August",
-          averageTemp: 28,
-          precipitation: 0,
-          icon: Sun,
-          conditions: "Hot & Dry",
-        },
-      ],
-    },
-    {
-      id: 5,
-      name: "Queenstown",
-      country: "New Zealand",
-      description:
-        "Adventure capital with stunning alpine scenery, perfect for outdoor enthusiasts.",
-      matchScore: 85,
-      image: "/landing/landing-01.jpg",
-      category: "Mountains",
-      weatherForecasts: [
-        {
-          month: "June",
-          averageTemp: 5,
-          precipitation: 70,
-          icon: CloudRain,
-          conditions: "Cold & Wet",
-        },
-        {
-          month: "July",
-          averageTemp: 4,
-          precipitation: 65,
-          icon: CloudRain,
-          conditions: "Cold & Wet",
-        },
-        {
-          month: "August",
-          averageTemp: 6,
-          precipitation: 60,
-          icon: Cloud,
-          conditions: "Cold",
-        },
-      ],
-    },
-  ];
+  if (!apiKey) {
+    console.log("OpenWeather API key not found");
+    return null;
+  }
+
+  try {
+    // Get capital city from REST Countries API
+    const countryResponse = await fetch(
+      `https://restcountries.com/v3.1/name/${country}`
+    );
+    const countryData = await countryResponse.json();
+    const capital = countryData[0]?.capital?.[0] || country;
+
+    // Get weather data from OpenWeather API
+    const weatherResponse = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${capital}&appid=${apiKey}&units=metric`
+    );
+    const weatherData = await weatherResponse.json();
+
+    // Return weather forecasts for the next 3 months (mock data based on current weather)
+    return [
+      {
+        month: new Date().toLocaleString("default", { month: "long" }),
+        temperature: `${Math.round(weatherData.main?.temp || 20)}°C`,
+        condition: weatherData.weather?.[0]?.description || "Clear",
+        humidity: `${weatherData.main?.humidity || 50}%`,
+        windSpeed: `${Math.round(weatherData.wind?.speed || 5)} m/s`,
+      },
+      // Add more months as needed
+    ];
+  } catch (error) {
+    console.error("Error fetching weather data:", error);
+    return null;
+  }
+}
+
+export async function getDestinationsByCountry(country: string) {
+  // Get API key the same way as your working API route
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+
+  console.log("GEMINI_API_KEY:", geminiApiKey ? "present" : "undefined");
+  console.log("Gemini API Key present:", !!geminiApiKey);
+
+  if (!geminiApiKey) {
+    console.log("Gemini API key not found in environment variables");
+    return [];
+  }
+
+  try {
+    // Initialize GoogleGenerativeAI the same way as your API route
+    const genAI = new GoogleGenerativeAI(geminiApiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `Generate a list of 5 popular tourist destinations in ${country}. 
+    For each destination, provide:
+    - name: The destination name
+    - description: A brief description (2-3 sentences)
+    - bestTimeToVisit: Best time to visit
+    - activities: Array of 3-4 main activities/attractions
+    
+    Return the response as a valid JSON array of objects with these exact properties.`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    // Parse the JSON response
+    try {
+      const rawDestinations = JSON.parse(text);
+
+      // Transform the raw data to match our Recommendation type
+      return Array.isArray(rawDestinations)
+        ? rawDestinations.map((dest, index) => ({
+            id: Date.now() + index,
+            name: dest.name,
+            country: country,
+            description: dest.description,
+            matchScore: Math.floor(80 + Math.random() * 20), // Random score between 80-99
+            image: "/landing/landing-01.jpg", // Default image
+            category: dest.bestTimeToVisit
+              ? "Best: " + dest.bestTimeToVisit
+              : "Travel",
+            weatherForecasts: [],
+            // Additional data we'll keep but won't be used by the existing UI
+            activities: dest.activities || [],
+            bestTimeToVisit: dest.bestTimeToVisit,
+          }))
+        : [];
+    } catch (parseError) {
+      console.error("Error parsing Gemini response:", parseError);
+      console.log("Raw response:", text);
+      return [];
+    }
+  } catch (error) {
+    console.error("Error fetching destinations from Gemini API:", error);
+    return [];
+  }
 }
