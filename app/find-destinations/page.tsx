@@ -37,13 +37,16 @@ export default function FindDestinationsPage() {
     try {
       // Use the new Gemini-powered server action to get destinations by country
       const recs = await getDestinationsByCountry(country);
-      setRecommendations(recs);
-      setShowRecommendations(true);
+      console.log("Received destinations:", recs);
 
-      // Add to search history if it's not already there
-      if (!searchHistory.includes(country)) {
+      // Add to search history if it's not already there and we got results
+      if (recs && recs.length > 0 && !searchHistory.includes(country)) {
         setSearchHistory((prev) => [country, ...prev].slice(0, 5)); // Keep only last 5 searches
       }
+
+      // Set recommendations and show results section
+      setRecommendations(recs || []);
+      setShowRecommendations(true);
     } catch (error) {
       console.error("Error fetching recommendations:", error);
       // Fallback: show no recommendations if error
@@ -160,16 +163,40 @@ export default function FindDestinationsPage() {
                     </p>
                   ) : (
                     <div className="mt-8 p-6 border border-muted rounded-lg shadow-sm">
+                      {" "}
                       <p className="text-muted-foreground mb-3">
-                        No destinations were found for your search. Please try
-                        another country or check your connection.
+                        We couldn&apos;t find destinations for &quot;{country}
+                        &quot;. This might be due to an error in processing the
+                        AI response, or the country may not be recognized.
                       </p>
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowRecommendations(false)}
-                      >
-                        Try Again
-                      </Button>
+                      <div className="flex gap-3 justify-center">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowRecommendations(false)}
+                        >
+                          Try Again
+                        </Button>
+                        <Button
+                          variant="default"
+                          onClick={() => {
+                            // Try one more time with the same country
+                            setIsLoading(true);
+                            getDestinationsByCountry(country)
+                              .then((recs) => {
+                                setRecommendations(recs || []);
+                              })
+                              .catch((err) => {
+                                console.error("Retry error:", err);
+                                setRecommendations([]);
+                              })
+                              .finally(() => {
+                                setIsLoading(false);
+                              });
+                          }}
+                        >
+                          Retry Search
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
