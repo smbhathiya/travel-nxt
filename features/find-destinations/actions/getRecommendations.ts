@@ -2,40 +2,51 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export async function getWeatherForecasts(country: string) {
+export async function getWeatherForLocation(locationName: string, country: string) {
   const apiKey = process.env.OPENWEATHER_API_KEY;
-  console.log("OPENWEATHER_API_KEY:", apiKey ? "present" : "undefined");
-
+  
   if (!apiKey) {
     console.log("OpenWeather API key not found");
     return null;
   }
 
   try {
-    // Get capital city from REST Countries API
-    const countryResponse = await fetch(
-      `https://restcountries.com/v3.1/name/${country}`
-    );
-    const countryData = await countryResponse.json();
-    const capital = countryData[0]?.capital?.[0] || country;
-
-    // Get weather data from OpenWeather API
+    // Try to get weather for the specific location first, fallback to country
+    const query = `${locationName}, ${country}`;
     const weatherResponse = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${capital}&appid=${apiKey}&units=metric`
+      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(query)}&appid=${apiKey}&units=metric`
     );
-    const weatherData = await weatherResponse.json();
-
-    return [
-      {
-        month: new Date().toLocaleString("default", { month: "long" }),
-        temperature: `${Math.round(weatherData.main?.temp || 20)}°C`,
+    
+    if (!weatherResponse.ok) {
+      // If specific location fails, try just the country
+      const countryResponse = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(country)}&appid=${apiKey}&units=metric`
+      );
+      
+      if (!countryResponse.ok) {
+        return null;
+      }
+      
+      const weatherData = await countryResponse.json();
+      return {
+        temperature: Math.round(weatherData.main?.temp || 20),
         condition: weatherData.weather?.[0]?.description || "Clear",
-        humidity: `${weatherData.main?.humidity || 50}%`,
-        windSpeed: `${Math.round(weatherData.wind?.speed || 5)} m/s`,
-      },
-    ];
+        humidity: weatherData.main?.humidity || 50,
+        windSpeed: Math.round(weatherData.wind?.speed || 5),
+        icon: weatherData.weather?.[0]?.icon || "01d"
+      };
+    }
+    
+    const weatherData = await weatherResponse.json();
+    return {
+      temperature: Math.round(weatherData.main?.temp || 20),
+      condition: weatherData.weather?.[0]?.description || "Clear",
+      humidity: weatherData.main?.humidity || 50,
+      windSpeed: Math.round(weatherData.wind?.speed || 5),
+      icon: weatherData.weather?.[0]?.icon || "01d"
+    };
   } catch (error) {
-    console.error("Error fetching weather data:", error);
+    console.error("Error fetching weather data for", locationName, ":", error);
     return null;
   }
 }
@@ -55,7 +66,7 @@ export async function getDestinationsByCountry(country: string) {
   try {
     const genAI = new GoogleGenerativeAI(geminiApiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = `Generate a list of 5 popular tourist destinations in ${country}. 
+    const prompt = `Generate a list of 8 popular tourist destinations in ${country}. 
     
     For each destination, provide these exact properties:
     - name: The destination name
@@ -109,22 +120,36 @@ export async function getDestinationsByCountry(country: string) {
       console.log("Cleaned JSON text:", jsonText);
       const rawDestinations = JSON.parse(jsonText);
 
-      return Array.isArray(rawDestinations)
-        ? rawDestinations.map((dest, index) => ({
-            id: Date.now() + index,
-            name: dest.name || `Destination ${index + 1}`,
-            country: country,
-            description: dest.description || "No description available.",
-            matchScore: Math.floor(80 + Math.random() * 20), 
-            image: "/landing/landing-01.jpg", 
-            category: dest.bestTimeToVisit
-              ? "Best: " + dest.bestTimeToVisit
-              : "Travel",
-            weatherForecasts: [],
-            activities: dest.activities || [],
-            bestTimeToVisit: dest.bestTimeToVisit,
-          }))
-        : [];
+      // Transform the raw data and fetch weather for each destination
+      if (Array.isArray(rawDestinations)) {
+        const destinationsWithWeather = await Promise.all(
+          rawDestinations.map(async (dest, index) => {
+            // Fetch weather data for this specific destination
+            const weatherData = await getWeatherForLocation(dest.name, country);
+            
+            return {
+              id: Date.now() + index,
+              name: dest.name || `Destination ${index + 1}`,
+              country: country,
+              description: dest.description || "No description available.",
+              matchScore: Math.floor(80 + Math.random() * 20),
+              image: "/landing/landing-01.jpg",
+              category: dest.bestTimeToVisit
+                ? "Best: " + dest.bestTimeToVisit
+                : "Travel",
+              weatherForecasts: [],
+              activities: dest.activities || [],
+              bestTimeToVisit: dest.bestTimeToVisit,
+              // Add weather data
+              weather: weatherData
+            };
+          })
+        );
+        
+        return destinationsWithWeather;
+      }
+      
+      return [];
     } catch (parseError) {
       console.error("Error parsing Gemini response:", parseError);
       console.log("Raw response:", text);

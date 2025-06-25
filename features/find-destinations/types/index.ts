@@ -1,8 +1,16 @@
+export type WeatherData = {
+  temperature: number;
+  condition: string;
+  humidity: number;
+  windSpeed: number;
+  icon: string;
+};
+
 export type WeatherForecast = {
   month: string;
   averageTemp: number;
   precipitation: number;
-  icon: React.ElementType; 
+  icon: React.ElementType;
   conditions: string;
 };
 
@@ -17,4 +25,5 @@ export type Recommendation = {
   weatherForecasts: WeatherForecast[];
   activities?: string[];
   bestTimeToVisit?: string;
+  weather?: WeatherData | null;
 };
