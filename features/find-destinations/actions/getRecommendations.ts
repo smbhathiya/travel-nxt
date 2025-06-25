@@ -2,9 +2,12 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export async function getWeatherForLocation(locationName: string, country: string) {
+export async function getWeatherForLocation(
+  locationName: string,
+  country: string
+) {
   const apiKey = process.env.OPENWEATHER_API_KEY;
-  
+
   if (!apiKey) {
     console.log("OpenWeather API key not found");
     return null;
@@ -14,36 +17,40 @@ export async function getWeatherForLocation(locationName: string, country: strin
     // Try to get weather for the specific location first, fallback to country
     const query = `${locationName}, ${country}`;
     const weatherResponse = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(query)}&appid=${apiKey}&units=metric`
+      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
+        query
+      )}&appid=${apiKey}&units=metric`
     );
-    
+
     if (!weatherResponse.ok) {
       // If specific location fails, try just the country
       const countryResponse = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(country)}&appid=${apiKey}&units=metric`
+        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
+          country
+        )}&appid=${apiKey}&units=metric`
       );
-      
+
       if (!countryResponse.ok) {
         return null;
       }
-      
+
       const weatherData = await countryResponse.json();
       return {
         temperature: Math.round(weatherData.main?.temp || 20),
         condition: weatherData.weather?.[0]?.description || "Clear",
         humidity: weatherData.main?.humidity || 50,
         windSpeed: Math.round(weatherData.wind?.speed || 5),
-        icon: weatherData.weather?.[0]?.icon || "01d"
+        icon: weatherData.weather?.[0]?.icon || "01d",
       };
     }
-    
+
     const weatherData = await weatherResponse.json();
     return {
       temperature: Math.round(weatherData.main?.temp || 20),
       condition: weatherData.weather?.[0]?.description || "Clear",
       humidity: weatherData.main?.humidity || 50,
       windSpeed: Math.round(weatherData.wind?.speed || 5),
-      icon: weatherData.weather?.[0]?.icon || "01d"
+      icon: weatherData.weather?.[0]?.icon || "01d",
     };
   } catch (error) {
     console.error("Error fetching weather data for", locationName, ":", error);
@@ -89,7 +96,7 @@ export async function getDestinationsByCountry(country: string) {
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text(); 
+    const text = response.text();
     try {
       let jsonText = text.trim();
 
@@ -120,20 +127,25 @@ export async function getDestinationsByCountry(country: string) {
       console.log("Cleaned JSON text:", jsonText);
       const rawDestinations = JSON.parse(jsonText);
 
+      console.log(
+        "Parsed destinations from Gemini:",
+        JSON.stringify(rawDestinations, null, 2)
+      );
+
       // Transform the raw data and fetch weather for each destination
       if (Array.isArray(rawDestinations)) {
         const destinationsWithWeather = await Promise.all(
           rawDestinations.map(async (dest, index) => {
             // Fetch weather data for this specific destination
             const weatherData = await getWeatherForLocation(dest.name, country);
-            
+
             return {
               id: Date.now() + index,
               name: dest.name || `Destination ${index + 1}`,
               country: country,
               description: dest.description || "No description available.",
               matchScore: Math.floor(80 + Math.random() * 20),
-              image: "/landing/landing-01.jpg",
+              image: dest.image || "/landing/landing-01.jpg",
               category: dest.bestTimeToVisit
                 ? "Best: " + dest.bestTimeToVisit
                 : "Travel",
@@ -141,14 +153,14 @@ export async function getDestinationsByCountry(country: string) {
               activities: dest.activities || [],
               bestTimeToVisit: dest.bestTimeToVisit,
               // Add weather data
-              weather: weatherData
+              weather: weatherData,
             };
           })
         );
-        
+
         return destinationsWithWeather;
       }
-      
+
       return [];
     } catch (parseError) {
       console.error("Error parsing Gemini response:", parseError);

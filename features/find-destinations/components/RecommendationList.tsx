@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "../../../components/ui/badge";
-import { Star } from "lucide-react";
+import { Star, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import { Recommendation } from "../../find-destinations/types";
 
@@ -10,6 +10,12 @@ export function RecommendationList({
 }: {
   recommendations: Recommendation[];
 }) {
+  const handleViewMore = (destinationName: string, country: string) => {
+    const searchQuery = `${destinationName} ${country} travel destination`;
+    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+    window.open(googleSearchUrl, '_blank');
+  };
+
   return (
     <div className="container max-w-7xl mx-auto px-4 mt-12">
       <h2 className="text-2xl font-bold mb-10 text-center">
@@ -22,18 +28,10 @@ export function RecommendationList({
             key={recommendation.id}
             className="overflow-hidden rounded-lg shadow-sm border"
           >
-            {/* Card Image with Top Match Badge */}
-            <div className="relative">
-              {/* Match Badge */}
-              <div className="absolute top-3 left-3 z-10 flex items-center gap-1">
-                <Badge variant="default" className="px-3 py-1 rounded-full">
-                  {recommendation.matchScore}%
-                </Badge>
-              </div>
-
-              {/* Weather Badge */}
+            {/* Weather Badge - Only show weather badge */}
+            <div className="relative p-4">
               {recommendation.weather && (
-                <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-10">
+                <div className="absolute top-3 right-3 z-10">
                   <Badge variant="outline" className="px-2 py-1 rounded-full bg-white/90 backdrop-blur-sm border-blue-200">
                     <Image
                       src={`https://openweathermap.org/img/wn/${recommendation.weather.icon}.png`}
@@ -48,23 +46,6 @@ export function RecommendationList({
                   </Badge>
                 </div>
               )}
-
-              {/* Category Badge */}
-              <div className="absolute top-3 right-3 z-10">
-                <Badge variant="secondary" className="px-3 py-1 rounded-full">
-                  {recommendation.category}
-                </Badge>
-              </div>
-
-              {/* Image */}
-              <div className="relative w-full h-52">
-                <Image
-                  src={recommendation.image}
-                  alt={recommendation.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
             </div>
 
             {/* Card Content */}
@@ -204,8 +185,14 @@ export function RecommendationList({
                 )}
               {/* Actions */}
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="w-full">
-                  Save for Later
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => handleViewMore(recommendation.name, recommendation.country)}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  View More
                 </Button>
               </div>
             </div>
