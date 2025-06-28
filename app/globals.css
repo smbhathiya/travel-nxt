@@ -44,14 +44,12 @@
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 2.0rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.141 0.005 285.823);
-  
-  /* Updated primary colors to use a modern green */
-  --primary: oklch(0.57 0.13 145);
+    --primary: oklch(0.57 0.13 145);
   --primary-foreground: oklch(1 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
