@@ -150,8 +150,10 @@ export default function FindDestinationsPage() {
       const response = await fetch('/api/bookmarks');
       if (response.ok) {
         const data = await response.json();
-        const bookmarkedSet = new Set(
-          data.bookmarks.map((bookmark: any) => `${bookmark.locationName}-${bookmark.locatedCity}`)
+        const bookmarkedSet = new Set<string>(
+          data.bookmarks.map((bookmark: { locationName: string; locatedCity: string }) => 
+            `${bookmark.locationName}-${bookmark.locatedCity}`
+          )
         );
         setBookmarkedLocations(bookmarkedSet);
       }
