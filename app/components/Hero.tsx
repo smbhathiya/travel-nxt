@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@clerk/nextjs";
 import { Sparkles, ArrowRight, Zap } from "lucide-react";
@@ -11,22 +10,13 @@ export function Hero() {
 
   return (
     <div className="relative rounded-none mx-auto flex flex-col items-center justify-center gap-8 py-24 sm:py-32 md:py-40 text-center px-4 bg-transparent">
-      {/* Background image */}
-      <div className="absolute inset-0 w-full h-full -z-10 rounded-none overflow-hidden bg-transparent">
-        <Image
-          src="/landing/landing-01.jpg"
-          alt="Sri Lanka landscape"
-          className="w-full h-full object-cover rounded-none blur-sm opacity-50"
-          draggable={false}
-          width={1920}
-          height={1080}
-        />
+      {/* Background */}
+      <div className="absolute inset-0 w-full h-full -z-10 rounded-none overflow-hidden">
+        <div className="w-full h-full bg-gradient-to-br from-primary/30 via-primary/20 to-primary/10 opacity-60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/50 via-transparent to-background/30" />
       </div>
 
-      {/* Decorative elements */}
-
       {isSignedIn ? (
-        // Content for authenticated users
         <>
           <div className="space-y-6">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">

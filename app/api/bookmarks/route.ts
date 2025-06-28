@@ -42,11 +42,11 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, bookmark });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating bookmark:', error);
     
     // Handle unique constraint violation (bookmark already exists)
-    if (error.code === 'P2002') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
       return NextResponse.json(
         { error: 'Location already bookmarked' },
         { status: 409 }
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { userId } = await auth();
     

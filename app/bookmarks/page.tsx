@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Star, Loader2, Trash2, ExternalLink, Bookmark } from "lucide-react";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface BookmarkData {
   id: string;
@@ -21,18 +21,11 @@ interface BookmarkData {
 
 export default function BookmarksPage() {
   const { user } = useUser();
-  const router = useRouter();
   const [bookmarks, setBookmarks] = useState<BookmarkData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteLoading, setDeleteLoading] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    if (user) {
-      fetchBookmarks();
-    }
-  }, [user]);
-
-  const fetchBookmarks = async () => {
+  const fetchBookmarks = useCallback(async () => {
     if (!user) return;
 
     setIsLoading(true);
@@ -47,7 +40,13 @@ export default function BookmarksPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchBookmarks();
+    }
+  }, [user, fetchBookmarks]);
 
   const handleDeleteBookmark = async (bookmark: BookmarkData) => {
     if (!user) return;
@@ -97,7 +96,7 @@ export default function BookmarksPage() {
                 Please sign in to view your bookmarks.
               </p>
               <Button asChild>
-                <a href="/sign-in">Sign In</a>
+                <Link href="/sign-in">Sign In</Link>
               </Button>
             </CardContent>
           </Card>
@@ -133,7 +132,7 @@ export default function BookmarksPage() {
                 <Bookmark className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No bookmarks yet</h3>
                 <p className="text-muted-foreground mb-4">
-                  Start exploring destinations and bookmark the ones you'd like to visit.
+                  Start exploring destinations and bookmark the ones you&apos;d like to visit.
                 </p>
                 <Button asChild>
                   <a href="/discover">Discover Locations</a>

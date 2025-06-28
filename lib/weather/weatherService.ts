@@ -109,7 +109,7 @@ export async function get5DayForecast(city: string): Promise<WeatherForecast[]> 
           break;
         }
       } catch (err) {
-        console.log(`Failed to fetch weather for ${cityVariation}`);
+        console.log(`Failed to fetch weather for ${cityVariation}:`, err);
         continue;
       }
     }
