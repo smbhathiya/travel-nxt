@@ -85,6 +85,7 @@ The app integrates with a Python recommendation API that should be running on `h
 ### POST `/recommend`
 
 **Request Body:**
+
 ```json
 {
   "interests": ["beaches", "mountains", "historic sites"]
@@ -92,6 +93,7 @@ The app integrates with a Python recommendation API that should be running on `h
 ```
 
 **Response:**
+
 ```json
 {
   "recommendations": [
@@ -117,7 +119,7 @@ The app integrates with a Python recommendation API that should be running on `h
 The app supports the following interest categories for Sri Lanka:
 
 - Beaches
-- Bodies of Water  
+- Bodies of Water
 - Farms
 - Gardens
 - Historic Sites
@@ -153,7 +155,7 @@ travel-nxt/
 │   ├── (auth)/                # Authentication routes
 │   ├── api/                   # API routes
 │   ├── components/            # Page-specific components
-│   ├── find-destinations/     # Main recommendation page
+│   ├── discover/     # Main recommendation page
 │   ├── interests/             # Interest selection page
 │   └── globals.css           # Global styles
 ├── components/                # Reusable UI components
@@ -173,7 +175,7 @@ travel-nxt/
 
 - `/` - Landing page
 - `/interests` - Interest selection for users
-- `/find-destinations` - View personalized recommendations
+- `/discover` - View personalized recommendations
 - `/sign-in`, `/sign-up` - Authentication pages
 
 ## 🧪 Development

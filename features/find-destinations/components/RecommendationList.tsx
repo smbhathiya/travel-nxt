@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "../../../components/ui/badge";
 import { Star, ExternalLink } from "lucide-react";
 import Image from "next/image";
-import { Recommendation } from "../../find-destinations/types";
+import { Recommendation } from "../../discover/types";
 
 export function RecommendationList({
   recommendations,
@@ -12,8 +12,10 @@ export function RecommendationList({
 }) {
   const handleViewMore = (destinationName: string, country: string) => {
     const searchQuery = `${destinationName} ${country} travel destination`;
-    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
-    window.open(googleSearchUrl, '_blank');
+    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(
+      searchQuery
+    )}`;
+    window.open(googleSearchUrl, "_blank");
   };
 
   return (
@@ -32,7 +34,10 @@ export function RecommendationList({
             <div className="relative p-4">
               {recommendation.weather && (
                 <div className="absolute top-3 right-3 z-10">
-                  <Badge variant="outline" className="px-2 py-1 rounded-full bg-white/90 backdrop-blur-sm border-blue-200">
+                  <Badge
+                    variant="outline"
+                    className="px-2 py-1 rounded-full bg-white/90 backdrop-blur-sm border-blue-200"
+                  >
                     <Image
                       src={`https://openweathermap.org/img/wn/${recommendation.weather.icon}.png`}
                       alt={recommendation.weather.condition}
@@ -60,7 +65,7 @@ export function RecommendationList({
                   </span>
                 </div>
               </div>
-              
+
               {/* Country and Quick Weather */}
               <div className="flex justify-between items-center mb-3">
                 <p className="text-muted-foreground text-sm">
@@ -185,11 +190,13 @@ export function RecommendationList({
                 )}
               {/* Actions */}
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="flex-1"
-                  onClick={() => handleViewMore(recommendation.name, recommendation.country)}
+                  onClick={() =>
+                    handleViewMore(recommendation.name, recommendation.country)
+                  }
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   View More

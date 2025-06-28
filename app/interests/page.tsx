@@ -145,7 +145,7 @@ export default function InterestsPage() {
       }
 
       // Navigate to find destinations page
-      router.push("/find-destinations");
+      router.push("/discover");
     } catch (error) {
       console.error("Error updating interests:", error);
     } finally {
@@ -162,82 +162,84 @@ export default function InterestsPage() {
           {isFetching ? (
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="text-muted-foreground mt-2">Loading your interests...</p>
+              <p className="text-muted-foreground mt-2">
+                Loading your interests...
+              </p>
             </div>
           ) : (
             <>
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold mb-2">
-                  {hasExistingInterests 
-                    ? "Update your travel interests" 
-                    : "What are your travel interests?"
-                  }
+                  {hasExistingInterests
+                    ? "Update your travel interests"
+                    : "What are your travel interests?"}
                 </h1>
                 <p className="text-muted-foreground">
-                  {hasExistingInterests 
+                  {hasExistingInterests
                     ? "Modify your selections to get better recommendations for destinations in Sri Lanka."
-                    : "Select all that apply. We'll recommend amazing destinations in Sri Lanka based on your interests."
-                  }
+                    : "Select all that apply. We'll recommend amazing destinations in Sri Lanka based on your interests."}
                 </p>
                 {hasExistingInterests && (
                   <p className="text-sm text-primary mt-2">
-                    You currently have {selectedInterests.length} interest{selectedInterests.length !== 1 ? 's' : ''} selected
+                    You currently have {selectedInterests.length} interest
+                    {selectedInterests.length !== 1 ? "s" : ""} selected
                   </p>
                 )}
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-            {interests.map((interest) => (
-              <Card
-                key={interest.id}
-                className={`cursor-pointer transition-colors p-4 flex flex-col items-center justify-center aspect-square ${
-                  selectedInterests.includes(interest.id)
-                    ? "bg-primary/10 dark:bg-primary/20 border-primary"
-                    : "hover:bg-muted"
-                }`}
-                onClick={() => toggleInterest(interest.id)}
-              >
-                <div
-                  className={`mb-2 ${
-                    selectedInterests.includes(interest.id)
-                      ? "text-primary"
-                      : ""
-                  }`}
-                >
-                  {interest.icon}
-                </div>
-                <span className="text-sm font-medium text-center">
-                  {interest.name}
-                </span>
-              </Card>
-            ))}
-          </div>
+                {interests.map((interest) => (
+                  <Card
+                    key={interest.id}
+                    className={`cursor-pointer transition-colors p-4 flex flex-col items-center justify-center aspect-square ${
+                      selectedInterests.includes(interest.id)
+                        ? "bg-primary/10 dark:bg-primary/20 border-primary"
+                        : "hover:bg-muted"
+                    }`}
+                    onClick={() => toggleInterest(interest.id)}
+                  >
+                    <div
+                      className={`mb-2 ${
+                        selectedInterests.includes(interest.id)
+                          ? "text-primary"
+                          : ""
+                      }`}
+                    >
+                      {interest.icon}
+                    </div>
+                    <span className="text-sm font-medium text-center">
+                      {interest.name}
+                    </span>
+                  </Card>
+                ))}
+              </div>
 
-          <div className="mt-8 flex justify-center gap-4">
-            {hasExistingInterests && (
-              <Button
-                variant="outline"
-                onClick={() => router.push("/find-destinations")}
-                className="w-full max-w-xs"
-                size="lg"
-              >
-                Cancel
-              </Button>
-            )}
-            <Button
-              onClick={handleSubmit}
-              disabled={isLoading || selectedInterests.length === 0}
-              className="w-full max-w-xs"
-              size="lg"
-            >
-              {isLoading ? 
-                "Saving..." : 
-                hasExistingInterests ? "Update Interests" : "Continue"
-              }
-            </Button>
-          </div>
-          </>
-        )}
+              <div className="mt-8 flex justify-center gap-4">
+                {hasExistingInterests && (
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push("/discover")}
+                    className="w-full max-w-xs"
+                    size="lg"
+                  >
+                    Cancel
+                  </Button>
+                )}
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isLoading || selectedInterests.length === 0}
+                  className="w-full max-w-xs"
+                  size="lg"
+                >
+                  {isLoading
+                    ? "Saving..."
+                    : hasExistingInterests
+                    ? "Update Interests"
+                    : "Continue"}
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

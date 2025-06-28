@@ -26,7 +26,8 @@ export function Hero() {
             Ready to Explore <span className="text-primary">Sri Lanka</span>?
           </h1>
           <p className="max-w-2xl mx-auto text-lg sm:text-xl text-muted-foreground px-4">
-            Discover amazing destinations in Sri Lanka perfectly matched to your interests
+            Discover amazing destinations in Sri Lanka perfectly matched to your
+            interests
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-4 mt-8">
             <Button
@@ -34,7 +35,7 @@ export function Hero() {
               size="lg"
               asChild
             >
-              <Link href="/find-destinations">Discover Destinations</Link>
+              <Link href="/discover">Discover Destinations</Link>
             </Button>
             <Button
               variant="outline"
@@ -54,8 +55,9 @@ export function Hero() {
             Personalized
           </h1>
           <p className="max-w-2xl mx-auto text-lg sm:text-xl text-muted-foreground px-4">
-            AI-powered travel recommendations for Sri Lanka based on your interests.
-            Find your perfect destination in the Pearl of the Indian Ocean.
+            AI-powered travel recommendations for Sri Lanka based on your
+            interests. Find your perfect destination in the Pearl of the Indian
+            Ocean.
           </p>
           <div className="flex flex-col items-center gap-4 mt-8">
             <Button

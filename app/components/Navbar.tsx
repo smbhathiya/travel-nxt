@@ -27,7 +27,7 @@ export function Navbar() {
         {isSignedIn ? (
           <nav className="hidden md:flex items-center space-x-8">
             <Link
-              href="/find-destinations"
+              href="/discover"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
               Discover Sri Lanka
@@ -79,7 +79,7 @@ export function Navbar() {
             {isSignedIn ? (
               <>
                 <Link
-                  href="/find-destinations"
+                  href="/discover"
                   className="px-3 py-2 rounded-md hover:bg-muted"
                   onClick={() => setMobileMenuOpen(false)}
                 >

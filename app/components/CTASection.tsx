@@ -27,7 +27,7 @@ export function CTASection() {
                 className="rounded-full"
                 asChild
               >
-                <Link href="/find-destinations">Find Destinations</Link>
+                <Link href="/discover">Find Destinations</Link>
               </Button>
               <Button
                 size="lg"

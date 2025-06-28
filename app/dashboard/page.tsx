@@ -57,7 +57,7 @@ export default function Dashboard() {
                       Discover places that match your interests
                     </p>
                     <Button asChild className="w-full">
-                      <Link href="/find-destinations">Explore</Link>
+                      <Link href="/discover">Explore</Link>
                     </Button>
                   </div>
                 </CardContent>
@@ -152,7 +152,7 @@ export default function Dashboard() {
                         Find personalized recommendations
                       </h3>
                       <Button asChild className="w-full mt-4" size="sm">
-                        <Link href="/find-destinations">Get Started</Link>
+                        <Link href="/discover">Get Started</Link>
                       </Button>
                     </CardContent>
                   </Card>
