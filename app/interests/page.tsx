@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
@@ -30,6 +30,8 @@ type Interest = {
 export default function InterestsPage() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [hasExistingInterests, setHasExistingInterests] = useState(false);
   const { user, isLoaded } = useUser();
   const router = useRouter();
 
@@ -87,6 +89,33 @@ export default function InterestsPage() {
     },
   ];
 
+  // Fetch existing interests when component mounts
+  useEffect(() => {
+    const fetchExistingInterests = async () => {
+      if (!user?.id) return;
+
+      setIsFetching(true);
+      try {
+        const response = await fetch("/api/user/interests");
+        if (response.ok) {
+          const data = await response.json();
+          if (data.interests && data.interests.length > 0) {
+            setSelectedInterests(data.interests);
+            setHasExistingInterests(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching existing interests:", error);
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    if (isLoaded && user) {
+      fetchExistingInterests();
+    }
+  }, [user, isLoaded]);
+
   const toggleInterest = (id: string) => {
     setSelectedInterests((prev) =>
       prev.includes(id)
@@ -97,13 +126,13 @@ export default function InterestsPage() {
 
   const handleSubmit = async () => {
     if (!user?.id) return;
-    
+
     setIsLoading(true);
     try {
-      const response = await fetch('/api/user/interests', {
-        method: 'POST',
+      const response = await fetch("/api/user/interests", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           clerkUserId: user.id,
@@ -112,7 +141,7 @@ export default function InterestsPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save interests');
+        throw new Error("Failed to save interests");
       }
 
       // Navigate to find destinations page
@@ -130,16 +159,34 @@ export default function InterestsPage() {
 
       <div className="flex-1">
         <div className="container max-w-4xl mx-auto px-4 py-12">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">
-              What are your travel interests?
-            </h1>
-            <p className="text-muted-foreground">
-              Select all that apply. We'll recommend amazing destinations in Sri Lanka based on your interests.
-            </p>
-          </div>
+          {isFetching ? (
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="text-muted-foreground mt-2">Loading your interests...</p>
+            </div>
+          ) : (
+            <>
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold mb-2">
+                  {hasExistingInterests 
+                    ? "Update your travel interests" 
+                    : "What are your travel interests?"
+                  }
+                </h1>
+                <p className="text-muted-foreground">
+                  {hasExistingInterests 
+                    ? "Modify your selections to get better recommendations for destinations in Sri Lanka."
+                    : "Select all that apply. We'll recommend amazing destinations in Sri Lanka based on your interests."
+                  }
+                </p>
+                {hasExistingInterests && (
+                  <p className="text-sm text-primary mt-2">
+                    You currently have {selectedInterests.length} interest{selectedInterests.length !== 1 ? 's' : ''} selected
+                  </p>
+                )}
+              </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
             {interests.map((interest) => (
               <Card
                 key={interest.id}
@@ -166,16 +213,31 @@ export default function InterestsPage() {
             ))}
           </div>
 
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 flex justify-center gap-4">
+            {hasExistingInterests && (
+              <Button
+                variant="outline"
+                onClick={() => router.push("/find-destinations")}
+                className="w-full max-w-xs"
+                size="lg"
+              >
+                Cancel
+              </Button>
+            )}
             <Button
               onClick={handleSubmit}
               disabled={isLoading || selectedInterests.length === 0}
               className="w-full max-w-xs"
               size="lg"
             >
-              {isLoading ? "Saving..." : "Continue"}
+              {isLoading ? 
+                "Saving..." : 
+                hasExistingInterests ? "Update Interests" : "Continue"
+              }
             </Button>
           </div>
+          </>
+        )}
         </div>
       </div>
 
