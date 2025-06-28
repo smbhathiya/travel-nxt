@@ -6,8 +6,8 @@ export default function Loader() {
       aria-label="Loading"
     >
       <div className="relative flex items-center justify-center w-32 h-32">
-        <span className="absolute w-24 h-24 rounded-full border-4 border-primary/50 border-t-transparent animate-spin-slow"></span>
-        <span className="absolute w-18 h-18 rounded-full border-2 border-primary/70 border-b-transparent animate-spin-reverse-slow"></span>
+        <span className="absolute w-34 h-34 rounded-full border-4 border-primary/50 border-t-transparent animate-spin-slow"></span>
+        <span className="absolute w-28 h-28 rounded-full border-2 border-primary/70 border-b-transparent animate-spin-reverse-slow"></span>
         <span className="text-base font-bold tracking-widest text-primary/80 select-none z-10">
           TravelNxt
         </span>
