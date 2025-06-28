@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin, Star, Loader2, Waves, Mountain, Landmark, TreePine, Flower2, Shield, Trees, Church, Building2, Fish, Camera, Cloud, Droplets, Wind } from "lucide-react";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
@@ -37,6 +38,7 @@ export default function FindDestinationsPage() {
   const { user } = useUser();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isWeatherLoading, setIsWeatherLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [weatherData, setWeatherData] = useState<LocationWeather[]>([]);
   const [userInterests, setUserInterests] = useState<string[]>([]);
@@ -80,6 +82,7 @@ export default function FindDestinationsPage() {
     if (!hasInterests) return;
     
     setIsLoading(true);
+    setIsWeatherLoading(true);
     try {
       // Fetch recommendations
       const response = await fetch('/api/recommendations', {
@@ -96,26 +99,35 @@ export default function FindDestinationsPage() {
 
       // Fetch weather data for the recommended locations
       if (recs.length > 0) {
-        const weatherResponse = await fetch('/api/weather', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            locations: recs.map((rec: Recommendation) => ({
-              Location_Name: rec.Location_Name,
-              Located_City: rec.Located_City
-            }))
-          }),
-        });
+        try {
+          const weatherResponse = await fetch('/api/weather', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              locations: recs.map((rec: Recommendation) => ({
+                Location_Name: rec.Location_Name,
+                Located_City: rec.Located_City
+              }))
+            }),
+          });
 
-        if (weatherResponse.ok) {
-          const weatherData = await weatherResponse.json();
-          setWeatherData(weatherData.weatherData || []);
+          if (weatherResponse.ok) {
+            const weatherData = await weatherResponse.json();
+            setWeatherData(weatherData.weatherData || []);
+          }
+        } catch (weatherError) {
+          console.error('Error fetching weather data:', weatherError);
+        } finally {
+          setIsWeatherLoading(false);
         }
+      } else {
+        setIsWeatherLoading(false);
       }
     } catch (error) {
       console.error('Error fetching recommendations:', error);
+      setIsWeatherLoading(false);
     } finally {
       setIsLoading(false);
     }
@@ -283,62 +295,126 @@ export default function FindDestinationsPage() {
                         {/* Location Description */}
                         {(() => {
                           const locationWeather = getLocationWeather(rec.Location_Name);
-                          return locationWeather?.description ? (
-                            <div className="mb-4">
-                              <p className="text-sm text-muted-foreground leading-relaxed">
-                                {locationWeather.description}
-                              </p>
-                            </div>
-                          ) : null;
+                          
+                          // Show skeleton while weather/description is loading
+                          if (isWeatherLoading) {
+                            return (
+                              <div className="mb-4">
+                                <Skeleton className="h-4 w-full mb-2" />
+                                <Skeleton className="h-4 w-3/4" />
+                              </div>
+                            );
+                          }
+                          
+                          // Show description if available
+                          if (locationWeather?.description) {
+                            return (
+                              <div className="mb-4">
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                  {locationWeather.description}
+                                </p>
+                              </div>
+                            );
+                          }
+                          
+                          return null;
                         })()}
 
                         {/* Weather Forecast */}
                         {(() => {
                           const locationWeather = getLocationWeather(rec.Location_Name);
-                          return locationWeather && locationWeather.forecast && locationWeather.forecast.length > 0 ? (
-                            <div className="border-t pt-4">
-                              <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                                <Cloud className="h-4 w-4" />
-                                5-Day Weather Forecast
-                              </h4>
-                              <div className="grid grid-cols-5 gap-2">
-                                {locationWeather.forecast.slice(0, 5).map((day, idx) => (
-                                  <div key={idx} className="text-center">
-                                    <div className="text-xs text-muted-foreground mb-1">
-                                      {day.date.split(' ')[0]}
+                          
+                          // Show skeleton while weather is loading
+                          if (isWeatherLoading) {
+                            return (
+                              <div className="border-t pt-4">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <Skeleton className="h-4 w-4" />
+                                  <Skeleton className="h-4 w-32" />
+                                </div>
+                                <div className="grid grid-cols-5 gap-2">
+                                  {Array.from({ length: 5 }).map((_, idx) => (
+                                    <div key={idx} className="text-center">
+                                      <Skeleton className="h-3 w-8 mx-auto mb-1" />
+                                      <Skeleton className="h-8 w-8 mx-auto mb-1" />
+                                      <Skeleton className="h-3 w-8 mx-auto mb-1" />
+                                      <Skeleton className="h-3 w-12 mx-auto" />
                                     </div>
-                                    <img 
-                                      src={`https://openweathermap.org/img/wn/${day.icon}.png`}
-                                      alt={day.description}
-                                      className="w-8 h-8 mx-auto mb-1"
-                                    />
-                                    <div className="text-xs font-medium">
-                                      {day.temp}°C
-                                    </div>
-                                    <div className="text-xs text-muted-foreground">
-                                      {day.description.split(' ')[0]}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                              
-                              {/* Today's detailed weather */}
-                              {locationWeather.forecast[0] && (
+                                  ))}
+                                </div>
                                 <div className="mt-3 pt-3 border-t border-muted/50">
-                                  <div className="grid grid-cols-2 gap-3 text-xs">
-                                    <div className="flex items-center gap-1">
-                                      <Droplets className="h-3 w-3 text-blue-500" />
-                                      <span>{locationWeather.forecast[0].humidity}% humidity</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <Wind className="h-3 w-3 text-gray-500" />
-                                      <span>{locationWeather.forecast[0].windSpeed} km/h</span>
-                                    </div>
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <Skeleton className="h-3 w-20" />
+                                    <Skeleton className="h-3 w-16" />
                                   </div>
                                 </div>
-                              )}
-                            </div>
-                          ) : null;
+                              </div>
+                            );
+                          }
+                          
+                          // Show weather data if available
+                          if (locationWeather && locationWeather.forecast && locationWeather.forecast.length > 0) {
+                            return (
+                              <div className="border-t pt-4">
+                                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                                  <Cloud className="h-4 w-4" />
+                                  5-Day Weather Forecast
+                                </h4>
+                                <div className="grid grid-cols-5 gap-2">
+                                  {locationWeather.forecast.slice(0, 5).map((day, idx) => (
+                                    <div key={idx} className="text-center">
+                                      <div className="text-xs text-muted-foreground mb-1">
+                                        {day.date.split(' ')[0]}
+                                      </div>
+                                      <img 
+                                        src={`https://openweathermap.org/img/wn/${day.icon}.png`}
+                                        alt={day.description}
+                                        className="w-8 h-8 mx-auto mb-1"
+                                      />
+                                      <div className="text-xs font-medium">
+                                        {day.temp}°C
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">
+                                        {day.description.split(' ')[0]}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                                
+                                {/* Today's detailed weather */}
+                                {locationWeather.forecast[0] && (
+                                  <div className="mt-3 pt-3 border-t border-muted/50">
+                                    <div className="grid grid-cols-2 gap-3 text-xs">
+                                      <div className="flex items-center gap-1">
+                                        <Droplets className="h-3 w-3 text-blue-500" />
+                                        <span>{locationWeather.forecast[0].humidity}% humidity</span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <Wind className="h-3 w-3 text-gray-500" />
+                                        <span>{locationWeather.forecast[0].windSpeed} km/h</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          }
+                          
+                          // Show "no weather data" message if weather loading is complete but no data
+                          if (!isWeatherLoading) {
+                            return (
+                              <div className="border-t pt-4">
+                                <div className="text-center py-4">
+                                  <Cloud className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                                  <p className="text-sm text-muted-foreground">
+                                    No weather data available
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          }
+                          
+                          return null;
                         })()}
                       </CardContent>
                     </Card>

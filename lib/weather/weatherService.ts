@@ -26,6 +26,23 @@ const OPENWEATHER_BASE_URL = 'https://api.openweathermap.org/data/2.5';
 // Initialize Gemini AI
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
+// Cache for descriptions to avoid rate limiting
+const descriptionCache = new Map<string, string>();
+
+// City name mappings for better weather API success
+const cityMappings: Record<string, string> = {
+  'Bentota': 'Bentota',
+  'Kalkudah': 'Batticaloa', // Nearby major city
+  'Nilaveli': 'Trincomalee', // Nearby major city
+  'Mirissa': 'Matara', // Nearby major city
+  'Colombo': 'Colombo',
+  'Arugam Bay': 'Ampara', // Nearby major city
+  'Hikkaduwa': 'Galle', // Nearby major city
+  'Trincomalee': 'Trincomalee',
+  'Unawatuna': 'Galle', // Nearby major city
+  'Kalutara': 'Kalutara'
+};
+
 export async function get5DayForecast(city: string): Promise<WeatherForecast[]> {
   if (!OPENWEATHER_API_KEY) {
     console.warn('OpenWeather API key not found');
@@ -33,15 +50,36 @@ export async function get5DayForecast(city: string): Promise<WeatherForecast[]> 
   }
 
   try {
-    const response = await fetch(
-      `${OPENWEATHER_BASE_URL}/forecast?q=${city},LK&appid=${OPENWEATHER_API_KEY}&units=metric`
-    );
+    // Try with original city name first, then with some common variations
+    const cityVariations = [
+      city,
+      city.split(' ')[0], // Try first word only
+      city.replace(/\s+/g, ''), // Remove spaces
+    ];
 
-    if (!response.ok) {
-      throw new Error(`Weather API error: ${response.status}`);
+    let response;
+    let data;
+
+    for (const cityVariation of cityVariations) {
+      try {
+        response = await fetch(
+          `${OPENWEATHER_BASE_URL}/forecast?q=${encodeURIComponent(cityVariation)},LK&appid=${OPENWEATHER_API_KEY}&units=metric`
+        );
+
+        if (response.ok) {
+          data = await response.json();
+          break;
+        }
+      } catch (err) {
+        console.log(`Failed to fetch weather for ${cityVariation}`);
+        continue;
+      }
     }
 
-    const data = await response.json();
+    if (!response || !response.ok || !data) {
+      console.warn(`Weather data not found for ${city}`);
+      return [];
+    }
     
     // Process the forecast data - OpenWeather returns 40 entries (5 days * 8 entries per day)
     // We'll take one entry per day (around noon time)
@@ -100,13 +138,12 @@ export async function getWeatherForLocations(locations: Array<{Location_Name: st
       };
     } catch (error) {
       console.error(`Error fetching data for ${location.Location_Name}:`, error);
-      // Return basic data without description if there's an error
-      const forecast = await get5DayForecast(location.Located_City);
+      // Return basic data with fallback description if there's an error
       return {
         location: location.Location_Name,
         city: location.Located_City,
-        forecast,
-        description: ''
+        forecast: [], // Return empty array instead of attempting another API call
+        description: `${location.Location_Name} is a beautiful destination in ${location.Located_City}, Sri Lanka.`
       };
     }
   });
@@ -129,11 +166,12 @@ export function getWeatherIcon(iconCode: string): string {
 export async function getLocationDescription(locationName: string, city: string): Promise<string> {
   if (!genAI) {
     console.warn('Gemini API key not found');
-    return '';
+    return `${locationName} is a beautiful destination in ${city}, Sri Lanka, known for its natural beauty and cultural significance.`;
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // Use the updated model name for Gemini 1.5
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const prompt = `Write a brief, engaging description (2-3 sentences) about ${locationName} in ${city}, Sri Lanka. Focus on what makes this place special for tourists - its key attractions, natural beauty, or cultural significance. Keep it concise and appealing.`;
     
@@ -144,6 +182,7 @@ export async function getLocationDescription(locationName: string, city: string)
     return text.trim();
   } catch (error) {
     console.error('Error generating location description:', error);
-    return '';
+    // Return a fallback description instead of empty string
+    return `${locationName} is a popular destination in ${city}, Sri Lanka, offering visitors a unique experience with its natural beauty and local attractions.`;
   }
 }
