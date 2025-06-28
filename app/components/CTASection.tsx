@@ -1,9 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@clerk/nextjs";
-import Link from "next/link";
-import { Rocket, Star, MapPin, Sparkles, ArrowRight } from "lucide-react";
+import { Rocket, Star } from "lucide-react";
 
 export function CTASection() {
   const { isSignedIn } = useAuth();

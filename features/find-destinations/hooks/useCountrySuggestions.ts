@@ -13,7 +13,7 @@ export function useCountrySuggestions(country: string) {
         .then((data) => {
           if (Array.isArray(data)) {
             setCountrySuggestions(
-              data.map((country: any) => ({
+              data.map((country: { name: { common: string }; cca2: string }) => ({
                 name: country.name.common,
                 code: country.cca2,
               }))

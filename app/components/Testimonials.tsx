@@ -58,7 +58,7 @@ export function Testimonials() {
                   ))}
                 </div>
                 <p className="italic text-muted-foreground">
-                  "{testimonial.text}"
+                  &quot;{testimonial.text}&quot;
                 </p>
                 <div className="mt-6 flex items-center">
                   <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">

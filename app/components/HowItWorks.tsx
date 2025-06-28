@@ -8,7 +8,7 @@ export function HowItWorks() {
           How It Works
         </h2>
         <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-          Your journey to discovering Sri Lanka's best destinations
+          Your journey to discovering Sri Lanka&apotss best destinations
         </p>
       </div>
 

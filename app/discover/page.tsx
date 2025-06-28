@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,6 +30,7 @@ import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface Recommendation {
   Location_Name: string;
@@ -72,32 +73,7 @@ export default function FindDestinationsPage() {
   );
   const [interestsLoading, setInterestsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchUserInterests();
-  }, [user]);
-
-  // Auto-fetch recommendations when user has interests
-  useEffect(() => {
-    if (hasInterests && userInterests.length > 0 && !isLoading) {
-      fetchRecommendations();
-    }
-  }, [hasInterests, userInterests]);
-
-  // Auto-fetch recommendations when user has interests
-  useEffect(() => {
-    if (hasInterests && userInterests.length > 0) {
-      fetchRecommendations();
-    }
-  }, [hasInterests, userInterests]);
-
-  // Fetch user bookmarks
-  useEffect(() => {
-    if (user) {
-      fetchBookmarks();
-    }
-  }, [user]);
-
-  const fetchUserInterests = async () => {
+  const fetchUserInterests = useCallback(async () => {
     if (!user) return;
 
     setInterestsLoading(true);
@@ -114,9 +90,9 @@ export default function FindDestinationsPage() {
     } finally {
       setInterestsLoading(false);
     }
-  };
+  }, [user]);
 
-  const fetchRecommendations = async () => {
+  const fetchRecommendations = useCallback(async () => {
     if (!hasInterests) return;
 
     setIsLoading(true);
@@ -169,10 +145,10 @@ export default function FindDestinationsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [hasInterests]);
 
   // Fetch user bookmarks
-  const fetchBookmarks = async () => {
+  const fetchBookmarks = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -190,7 +166,32 @@ export default function FindDestinationsPage() {
     } catch (error) {
       console.error("Error fetching bookmarks:", error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchUserInterests();
+  }, [fetchUserInterests]);
+
+  // Auto-fetch recommendations when user has interests
+  useEffect(() => {
+    if (hasInterests && userInterests.length > 0 && !isLoading) {
+      fetchRecommendations();
+    }
+  }, [hasInterests, userInterests, fetchRecommendations, isLoading]);
+
+  // Auto-fetch recommendations when user has interests
+  useEffect(() => {
+    if (hasInterests && userInterests.length > 0) {
+      fetchRecommendations();
+    }
+  }, [hasInterests, userInterests, fetchRecommendations]);
+
+  // Fetch user bookmarks
+  useEffect(() => {
+    if (user) {
+      fetchBookmarks();
+    }
+  }, [user, fetchBookmarks]);
 
   const handleBookmark = async (rec: Recommendation) => {
     if (!user) return;
@@ -543,7 +544,7 @@ export default function FindDestinationsPage() {
                                         <div className="text-xs text-muted-foreground mb-1">
                                           {day.date.split(" ")[0]}
                                         </div>
-                                        <img
+                                        <Image
                                           src={`https://openweathermap.org/img/wn/${day.icon}.png`}
                                           alt={day.description}
                                           className="w-8 h-8 mx-auto mb-1"

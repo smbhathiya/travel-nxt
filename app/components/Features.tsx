@@ -11,7 +11,7 @@ export function Features() {
           Travel Smarter, Not Harder
         </h2>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          Our AI-powered platform revolutionizes how you discover Sri Lanka's hidden gems
+          Our AI-powered platform revolutionizes how you discover Sri Lankas hidden gems
         </p>
       </div>
 
