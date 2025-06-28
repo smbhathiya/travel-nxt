@@ -8,17 +8,17 @@ export function Features() {
           {
             icon: <Compass className="h-8 w-8 text-primary" />,
             title: "AI-Powered Discovery",
-            desc: "Our advanced AI analyzes your interests and past travels to suggest destinations you'll love",
+            desc: "Our advanced AI analyzes your interests to suggest the best destinations in Sri Lanka for you",
           },
           {
             icon: <Sun className="h-8 w-8 text-primary" />,
-            title: "Weather Forecasting",
-            desc: "Get insights on upcoming weather conditions to plan the perfect trip timing",
+            title: "Interest-Based Matching",
+            desc: "Get personalized recommendations based on your specific travel interests and preferences",
           },
           {
             icon: <Map className="h-8 w-8 text-primary" />,
-            title: "Personalized Matches",
-            desc: "Discover destinations that match your unique preferences and travel style",
+            title: "Sri Lanka Expertise",
+            desc: "Discover hidden gems and popular destinations across the beautiful island of Sri Lanka",
           },
         ].map((feature, idx) => (
           <div key={idx} className="relative group h-full">

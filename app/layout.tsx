@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
+import { UserOnboarding } from "../components/UserOnboarding";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,21 +16,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Smart Traveller - AI-Powered Travel Recommendations",
+  title: "TravelNxt - Discover Sri Lanka",
   description:
-    "Get personalized travel recommendations based on your interests, previous destinations, and optimal weather conditions for your perfect adventure.",
+    "Get personalized travel recommendations for Sri Lanka based on your interests. Discover beaches, mountains, cultural sites, and more in the Pearl of the Indian Ocean.",
   keywords: [
-    "travel",
-    "AI",
-    "personalized recommendations",
-    "weather forecast",
+    "Sri Lanka travel",
+    "AI travel recommendations",
+    "Sri Lanka destinations",
     "travel planning",
-    "destination discovery",
+    "Sri Lanka tourism",
+    "personalized travel",
   ],
   openGraph: {
-    title: "Smart Traveller - AI-Powered Travel Recommendations",
+    title: "TravelNxt - Discover Sri Lanka",
     description:
-      "AI-powered travel recommendations based on your interests, past travels, and weather conditions",
+      "AI-powered travel recommendations for Sri Lanka based on your interests",
     type: "website",
     locale: "en_US",
   },
@@ -52,7 +53,9 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <UserOnboarding>
+              {children}
+            </UserOnboarding>
           </ThemeProvider>
         </ClerkProvider>
       </body>

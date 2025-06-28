@@ -10,13 +10,14 @@ import {
   Waves,
   Mountain,
   Landmark,
-  UtensilsCrossed,
-  Palette,
+  TreePine,
+  Flower2,
   Camera,
-  Tent,
+  Shield,
   Trees,
-  Users,
+  Church,
   Building2,
+  Fish,
 } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 
@@ -33,43 +34,56 @@ export default function InterestsPage() {
   const router = useRouter();
 
   const interests: Interest[] = [
-    { id: "beach", name: "Beaches", icon: <Waves className="h-6 w-6" /> },
+    { id: "beaches", name: "Beaches", icon: <Waves className="h-6 w-6" /> },
     {
-      id: "mountains",
-      name: "Mountains",
-      icon: <Mountain className="h-6 w-6" />,
+      id: "bodies of water",
+      name: "Bodies of Water",
+      icon: <Fish className="h-6 w-6" />,
     },
     {
-      id: "culture",
-      name: "Cultural Sites",
+      id: "farms",
+      name: "Farms",
+      icon: <TreePine className="h-6 w-6" />,
+    },
+    {
+      id: "gardens",
+      name: "Gardens",
+      icon: <Flower2 className="h-6 w-6" />,
+    },
+    {
+      id: "historic sites",
+      name: "Historic Sites",
       icon: <Landmark className="h-6 w-6" />,
     },
     {
-      id: "food",
-      name: "Culinary",
-      icon: <UtensilsCrossed className="h-6 w-6" />,
+      id: "museums",
+      name: "Museums",
+      icon: <Building2 className="h-6 w-6" />,
     },
     {
-      id: "arts",
-      name: "Arts & Museums",
-      icon: <Palette className="h-6 w-6" />,
+      id: "national parks",
+      name: "National Parks",
+      icon: <Shield className="h-6 w-6" />,
     },
     {
-      id: "photography",
-      name: "Photography",
+      id: "nature & wildlife areas",
+      name: "Nature & Wildlife Areas",
+      icon: <Trees className="h-6 w-6" />,
+    },
+    {
+      id: "waterfalls",
+      name: "Waterfalls",
+      icon: <Mountain className="h-6 w-6" />,
+    },
+    {
+      id: "zoological gardens",
+      name: "Zoological Gardens",
       icon: <Camera className="h-6 w-6" />,
     },
-    { id: "camping", name: "Camping", icon: <Tent className="h-6 w-6" /> },
-    { id: "nature", name: "Nature", icon: <Trees className="h-6 w-6" /> },
     {
-      id: "festivals",
-      name: "Festivals & Events",
-      icon: <Users className="h-6 w-6" />,
-    },
-    {
-      id: "citylife",
-      name: "Urban Adventures",
-      icon: <Building2 className="h-6 w-6" />,
+      id: "religious sites",
+      name: "Religious Sites",
+      icon: <Church className="h-6 w-6" />,
     },
   ];
 
@@ -82,13 +96,27 @@ export default function InterestsPage() {
   };
 
   const handleSubmit = async () => {
+    if (!user?.id) return;
+    
     setIsLoading(true);
     try {
-      // In a real app, this would save interests to a database keyed by Clerk user ID
-      console.log(`Saving interests for user ${user?.id}:`, selectedInterests);
+      const response = await fetch('/api/user/interests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          clerkUserId: user.id,
+          interests: selectedInterests,
+        }),
+      });
 
-      // For now we are just simulating the save and navigating to next screen
-      router.push("/previous-trips");
+      if (!response.ok) {
+        throw new Error('Failed to save interests');
+      }
+
+      // Navigate to find destinations page
+      router.push("/find-destinations");
     } catch (error) {
       console.error("Error updating interests:", error);
     } finally {
@@ -107,8 +135,7 @@ export default function InterestsPage() {
               What are your travel interests?
             </h1>
             <p className="text-muted-foreground">
-              Select all that apply. These will help us recommend destinations
-              you'll love.
+              Select all that apply. We'll recommend amazing destinations in Sri Lanka based on your interests.
             </p>
           </div>
 

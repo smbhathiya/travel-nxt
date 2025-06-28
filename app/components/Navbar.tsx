@@ -19,7 +19,7 @@ export function Navbar() {
         <Link href="/" className="flex items-center space-x-2">
           <Globe className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
           <span className="text-lg sm:text-xl font-bold">
-            Smart<span className="text-primary">Traveller</span>
+            Travel<span className="text-primary">Nxt</span>
           </span>
         </Link>
 
@@ -27,22 +27,16 @@ export function Navbar() {
         {isSignedIn ? (
           <nav className="hidden md:flex items-center space-x-8">
             <Link
-              href="/dashboard"
-              className="text-sm font-medium transition-colors hover:text-primary"
-            >
-              Dashboard
-            </Link>
-            <Link
               href="/find-destinations"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
-              Find Destinations
+              Discover Sri Lanka
             </Link>
             <Link
-              href="/previous-trips"
+              href="/interests"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
-              My Trips
+              My Interests
             </Link>
           </nav>
         ) : null}
@@ -85,25 +79,18 @@ export function Navbar() {
             {isSignedIn ? (
               <>
                 <Link
-                  href="/dashboard"
-                  className="px-3 py-2 rounded-md hover:bg-muted"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <Link
                   href="/find-destinations"
                   className="px-3 py-2 rounded-md hover:bg-muted"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Find Destinations
+                  Discover Sri Lanka
                 </Link>
                 <Link
-                  href="/previous-trips"
+                  href="/interests"
                   className="px-3 py-2 rounded-md hover:bg-muted"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  My Trips
+                  My Interests
                 </Link>
               </>
             ) : (
