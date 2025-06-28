@@ -16,7 +16,7 @@ export function Hero() {
         <Image
           src="/landing/landing-01.jpg"
           alt="Sri Lanka landscape"
-          className="w-full h-full object-cover rounded-none blur-sm opacity-20"
+          className="w-full h-full object-cover rounded-none blur-sm opacity-50"
           draggable={false}
           width={1920}
           height={1080}
@@ -54,7 +54,7 @@ export function Hero() {
             </Button>
             <Button
               variant="outline"
-              className="h-14 px-10 rounded-2xl text-lg font-medium border-2 hover:bg-accent/50 transition-all duration-300"
+              className="h-14 px-10 rounded-2xl text-lg font-medium border-2 hover:bg-accent/30 bg-accent/20 transition-all duration-300"
               size="lg"
               asChild
             >
