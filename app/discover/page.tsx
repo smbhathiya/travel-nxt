@@ -253,6 +253,12 @@ export default function FindDestinationsPage() {
     }
   };
 
+  // Manual refresh function that resets cache
+  const handleManualRefresh = useCallback(() => {
+    setRecommendationsFetched(false);
+    fetchRecommendations();
+  }, [fetchRecommendations]);
+
   // Function to get icon based on location type
   const getLocationIcon = (locationType: string) => {
     const iconClass = "h-5 w-5";
@@ -385,7 +391,7 @@ export default function FindDestinationsPage() {
                       </div>
                     ) : (
                       <Button
-                        onClick={fetchRecommendations}
+                        onClick={handleManualRefresh}
                         disabled={isLoading}
                         variant="outline"
                         size="sm"
