@@ -92,9 +92,19 @@ export default function FindDestinationsPage() {
           ) : (
             <div className="space-y-6">
               <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-4">
-                  Your interests: {userInterests.join(', ')}
-                </p>
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <p className="text-sm text-muted-foreground">
+                    Your interests: {userInterests.join(', ')}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => window.location.href = '/interests'}
+                    className="text-xs h-auto py-1 px-2"
+                  >
+                    Edit
+                  </Button>
+                </div>
                 <Button 
                   onClick={fetchRecommendations}
                   disabled={isLoading}
