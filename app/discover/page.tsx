@@ -70,6 +70,7 @@ export default function FindDestinationsPage() {
   const [bookmarkLoading, setBookmarkLoading] = useState<Set<string>>(
     new Set()
   );
+  const [interestsLoading, setInterestsLoading] = useState(true);
 
   useEffect(() => {
     fetchUserInterests();
@@ -99,6 +100,7 @@ export default function FindDestinationsPage() {
   const fetchUserInterests = async () => {
     if (!user) return;
 
+    setInterestsLoading(true);
     try {
       const response = await fetch("/api/user/interests");
       if (response.ok) {
@@ -109,6 +111,8 @@ export default function FindDestinationsPage() {
       }
     } catch (error) {
       console.error("Error fetching user interests:", error);
+    } finally {
+      setInterestsLoading(false);
     }
   };
 
@@ -307,7 +311,14 @@ export default function FindDestinationsPage() {
             </p>
           </div>
 
-          {!hasInterests ? (
+          {interestsLoading ? (
+            <Card className="max-w-md mx-auto">
+              <CardContent className="p-6 text-center">
+                <Skeleton className="h-4 w-3/4 mx-auto mb-4" />
+                <Skeleton className="h-10 w-32 mx-auto" />
+              </CardContent>
+            </Card>
+          ) : !hasInterests ? (
             <Card className="max-w-md mx-auto">
               <CardContent className="p-6 text-center">
                 <p className="text-muted-foreground mb-4">
@@ -322,7 +333,20 @@ export default function FindDestinationsPage() {
           ) : (
             <div className="space-y-6">
               <div className="text-center bg-muted/30 rounded-xl p-6 border border-muted">
-                <div className="flex items-center justify-center gap-3 mb-4">
+                {interestsLoading ? (
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-24" />
+                      <div className="flex flex-wrap gap-1">
+                        <Skeleton className="h-6 w-16 rounded-full" />
+                        <Skeleton className="h-6 w-20 rounded-full" />
+                        <Skeleton className="h-6 w-14 rounded-full" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-8 w-24" />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-3 mb-4">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-muted-foreground">
                       Your interests:
@@ -352,31 +376,36 @@ export default function FindDestinationsPage() {
                     Edit Interests
                   </Button>
                 </div>
+                )}
 
-                {isLoading && recommendations.length === 0 ? (
-                  <div className="flex items-center justify-center gap-2 py-4">
-                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                    <span className="text-muted-foreground">
-                      Getting your personalized recommendations...
-                    </span>
-                  </div>
-                ) : (
-                  <Button
-                    onClick={fetchRecommendations}
-                    disabled={isLoading}
-                    variant="outline"
-                    size="sm"
-                    className="border-primary/20 hover:border-primary"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Refreshing...
-                      </>
+                {!interestsLoading && (
+                  <>
+                    {isLoading && recommendations.length === 0 ? (
+                      <div className="flex items-center justify-center gap-2 py-4">
+                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                        <span className="text-muted-foreground">
+                          Getting your personalized recommendations...
+                        </span>
+                      </div>
                     ) : (
-                      "Refresh Recommendations"
+                      <Button
+                        onClick={fetchRecommendations}
+                        disabled={isLoading}
+                        variant="outline"
+                        size="sm"
+                        className="border-primary/20 hover:border-primary"
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Refreshing...
+                          </>
+                        ) : (
+                          "Refresh Recommendations"
+                        )}
+                      </Button>
                     )}
-                  </Button>
+                  </>
                 )}
               </div>
 
