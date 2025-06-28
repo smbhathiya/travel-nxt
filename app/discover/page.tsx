@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin, Star, Loader2, Waves, Mountain, Landmark, TreePine, Flower2, Shield, Trees, Church, Building2, Fish, Camera, Cloud, Droplets, Wind } from "lucide-react";
+import { MapPin, Star, Loader2, Waves, Mountain, Landmark, TreePine, Flower2, Shield, Trees, Church, Building2, Fish, Camera, Cloud, Droplets, Wind, ExternalLink, Bookmark, BookmarkCheck } from "lucide-react";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { useUser } from "@clerk/nextjs";
@@ -43,6 +43,8 @@ export default function FindDestinationsPage() {
   const [weatherData, setWeatherData] = useState<LocationWeather[]>([]);
   const [userInterests, setUserInterests] = useState<string[]>([]);
   const [hasInterests, setHasInterests] = useState(false);
+  const [bookmarkedLocations, setBookmarkedLocations] = useState<Set<string>>(new Set());
+  const [bookmarkLoading, setBookmarkLoading] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchUserInterests();
@@ -61,6 +63,13 @@ export default function FindDestinationsPage() {
       fetchRecommendations();
     }
   }, [hasInterests, userInterests]);
+
+  // Fetch user bookmarks
+  useEffect(() => {
+    if (user) {
+      fetchBookmarks();
+    }
+  }, [user]);
 
   const fetchUserInterests = async () => {
     if (!user) return;
@@ -133,6 +142,89 @@ export default function FindDestinationsPage() {
     }
   };
 
+  // Fetch user bookmarks
+  const fetchBookmarks = async () => {
+    if (!user) return;
+
+    try {
+      const response = await fetch('/api/bookmarks');
+      if (response.ok) {
+        const data = await response.json();
+        const bookmarkedSet = new Set(
+          data.bookmarks.map((bookmark: any) => `${bookmark.locationName}-${bookmark.locatedCity}`)
+        );
+        setBookmarkedLocations(bookmarkedSet);
+      }
+    } catch (error) {
+      console.error('Error fetching bookmarks:', error);
+    }
+  };
+
+  const handleBookmark = async (rec: Recommendation) => {
+    if (!user) return;
+
+    const locationKey = `${rec.Location_Name}-${rec.Located_City}`;
+    const isBookmarked = bookmarkedLocations.has(locationKey);
+
+    // Add to loading set
+    setBookmarkLoading(prev => new Set(prev).add(locationKey));
+
+    try {
+      if (isBookmarked) {
+        // Remove bookmark
+        const response = await fetch('/api/bookmarks', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            locationName: rec.Location_Name,
+            locatedCity: rec.Located_City,
+          }),
+        });
+
+        if (response.ok) {
+          setBookmarkedLocations(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(locationKey);
+            return newSet;
+          });
+        }
+      } else {
+        // Add bookmark
+        const response = await fetch('/api/bookmarks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            locationName: rec.Location_Name,
+            locatedCity: rec.Located_City,
+            locationType: rec.Location_Type,
+            rating: rec.Rating,
+            personalizedScore: rec.personalized_score,
+          }),
+        });
+
+        if (response.ok) {
+          setBookmarkedLocations(prev => new Set(prev).add(locationKey));
+        } else if (response.status === 409) {
+          // Already bookmarked
+          setBookmarkedLocations(prev => new Set(prev).add(locationKey));
+        }
+      }
+    } catch (error) {
+      console.error('Error handling bookmark:', error);
+    } finally {
+      // Remove from loading set
+      setBookmarkLoading(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(locationKey);
+        return newSet;
+      });
+    }
+  };
+
   // Function to get icon based on location type
   const getLocationIcon = (locationType: string) => {
     const iconClass = "h-5 w-5";
@@ -177,7 +269,7 @@ export default function FindDestinationsPage() {
         <div className="container max-w-6xl mx-auto px-4 py-12">
           <div className="text-center mb-10">
             <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Discover Sri Lanka
+              Discover Travel Locations in Sri Lanka
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Get personalized recommendations for amazing destinations in Sri Lanka based on your interests
@@ -416,6 +508,44 @@ export default function FindDestinationsPage() {
                           
                           return null;
                         })()}
+
+                        {/* Action Buttons */}
+                        <div className="mt-4 pt-4 border-t border-muted/30">
+                          <div className="flex gap-2">
+                            {/* Bookmark Button */}
+                            <Button
+                              variant={bookmarkedLocations.has(`${rec.Location_Name}-${rec.Located_City}`) ? "default" : "outline"}
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleBookmark(rec)}
+                              disabled={bookmarkLoading.has(`${rec.Location_Name}-${rec.Located_City}`)}
+                            >
+                              {bookmarkLoading.has(`${rec.Location_Name}-${rec.Located_City}`) ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : bookmarkedLocations.has(`${rec.Location_Name}-${rec.Located_City}`) ? (
+                                <BookmarkCheck className="h-4 w-4 mr-2" />
+                              ) : (
+                                <Bookmark className="h-4 w-4 mr-2" />
+                              )}
+                              {bookmarkedLocations.has(`${rec.Location_Name}-${rec.Located_City}`) ? "Bookmarked" : "Bookmark"}
+                            </Button>
+                            
+                            {/* View More Info Button */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => {
+                                const searchQuery = `${rec.Location_Name} ${rec.Located_City} Sri Lanka tourist attractions`;
+                                const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+                                window.open(googleSearchUrl, '_blank', 'noopener,noreferrer');
+                              }}
+                            >
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              More Info
+                            </Button>
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}

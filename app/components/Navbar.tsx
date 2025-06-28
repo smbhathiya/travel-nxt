@@ -30,13 +30,19 @@ export function Navbar() {
               href="/discover"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
-              Discover Sri Lanka
+              Discover
             </Link>
             <Link
               href="/interests"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
               My Interests
+            </Link>
+            <Link
+              href="/bookmarks"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              My Bookmarks
             </Link>
           </nav>
         ) : null}
@@ -91,6 +97,13 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   My Interests
+                </Link>
+                <Link
+                  href="/bookmarks"
+                  className="px-3 py-2 rounded-md hover:bg-muted"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  My Bookmarks
                 </Link>
               </>
             ) : (

@@ -15,11 +15,28 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  clerkUserId String   @unique
-  interests   String[] // Array of interest tags
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          String     @id @default(cuid())
+  clerkUserId String     @unique
+  interests   String[]   
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  bookmarks   Bookmark[] 
 
   @@map("users")
+}
+
+model Bookmark {
+  id           String   @id @default(cuid())
+  userId       String
+  locationName String
+  locatedCity  String
+  locationType String
+  rating       Float
+  personalizedScore Float
+  createdAt    DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, locationName, locatedCity])
+  @@map("bookmarks")
 }
