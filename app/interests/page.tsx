@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
@@ -160,12 +161,29 @@ export default function InterestsPage() {
       <div className="flex-1">
         <div className="container max-w-4xl mx-auto px-4 py-12">
           {isFetching ? (
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="text-muted-foreground mt-2">
-                Loading your interests...
-              </p>
-            </div>
+            <>
+              {/* Skeleton for header */}
+              <div className="text-center mb-8">
+                <Skeleton className="h-9 w-96 mx-auto mb-2" />
+                <Skeleton className="h-5 w-full max-w-2xl mx-auto mb-2" />
+                <Skeleton className="h-5 w-3/4 max-w-xl mx-auto" />
+              </div>
+
+              {/* Skeleton for interest cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-8">
+                {Array.from({ length: 11 }).map((_, index) => (
+                  <Card key={index} className="p-4 flex flex-col items-center justify-center aspect-square">
+                    <Skeleton className="h-6 w-6 mb-2" />
+                    <Skeleton className="h-4 w-16" />
+                  </Card>
+                ))}
+              </div>
+
+              {/* Skeleton for buttons */}
+              <div className="flex justify-center gap-4">
+                <Skeleton className="h-11 w-full max-w-xs" />
+              </div>
+            </>
           ) : (
             <>
               <div className="text-center mb-8">
