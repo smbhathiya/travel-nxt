@@ -10,12 +10,12 @@ export function CTASection() {
 
   return (
     <section className="relative py-20 sm:py-24 overflow-hidden">
-      {/* Modern gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-blue-600" />
+      {/* Primary color background */}
+      <div className="absolute inset-0 bg-primary" />
       
       {/* Decorative elements */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-      <div className="absolute bottom-0 right-0 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
       
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40" />
@@ -31,7 +31,7 @@ export function CTASection() {
             
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
               Your Next{" "}
-              <span className="bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+              <span className="text-white">
                 Adventure
               </span>{" "}
               <br />
@@ -52,7 +52,7 @@ export function CTASection() {
             
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
               Start Your{" "}
-              <span className="bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+              <span className="text-white">
                 Sri Lankan
               </span>{" "}
               <br />

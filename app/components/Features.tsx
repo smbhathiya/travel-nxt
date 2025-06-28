@@ -73,7 +73,7 @@ export function Features() {
           { number: "24/7", label: "AI Support" },
         ].map((stat, idx) => (
           <div key={idx} className="space-y-2">
-            <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            <div className="text-3xl sm:text-4xl font-bold text-primary">
               {stat.number}
             </div>
             <div className="text-sm text-muted-foreground font-medium">

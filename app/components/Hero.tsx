@@ -9,7 +9,18 @@ export function Hero() {
   const { isSignedIn } = useAuth();
 
   return (
-    <div className="relative container max-w-7xl mx-auto flex flex-col items-center justify-center gap-8 py-24 sm:py-32 md:py-40 text-center px-4">
+    <div className="relative container max-w-7xl mx-auto flex flex-col items-center justify-center gap-4 py-12 sm:py-16 md:py-20 text-center px-4">
+      {/* Background image */}
+      <div className="absolute inset-0 w-full h-full -z-20 rounded-3xl overflow-hidden">
+        <img
+          src="/landing/landing-01.jpg"
+          alt="Sri Lanka landscape"
+          className="w-full h-full object-cover opacity-20 blur-sm"
+          draggable={false}
+        />
+        <div className="absolute inset-0 bg-background/80" />
+      </div>
+
       {/* Decorative elements */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl -z-10" />
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl -z-10" />
@@ -23,10 +34,7 @@ export function Hero() {
               Ready for your next adventure?
             </div>
             <h1 className="text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl max-w-5xl">
-              Explore{" "}
-              <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                Sri Lanka
-              </span>
+              Explore <span className="text-primary">Sri Lanka</span>
             </h1>
             <p className="max-w-2xl mx-auto text-xl sm:text-2xl text-muted-foreground/80 leading-relaxed">
               Discover personalized destinations crafted just for you
@@ -35,7 +43,7 @@ export function Hero() {
 
           <div className="flex flex-col sm:flex-row items-center gap-4 mt-12">
             <Button
-              className="h-14 px-10 rounded-2xl text-lg font-medium bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-lg hover:shadow-xl transition-all duration-300"
+              className="h-14 px-10 rounded-2xl text-lg font-medium bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
               size="lg"
               asChild
             >
@@ -63,24 +71,21 @@ export function Hero() {
               AI-Powered Travel Discovery
             </div>
             <h1 className="text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl max-w-5xl">
-              Discover{" "}
-              <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                Sri Lanka
-              </span>
+              Discover <span className="text-primary">Sri Lanka</span>
               <br />
               <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl">
                 Your Way
               </span>
             </h1>
             <p className="max-w-3xl mx-auto text-xl sm:text-2xl text-muted-foreground/80 leading-relaxed">
-              Experience the Pearl of the Indian Ocean with AI-powered recommendations 
-              tailored to your unique interests and travel style
+              Experience the Pearl of the Indian Ocean with AI-powered
+              recommendations tailored to your unique interests and travel style
             </p>
           </div>
 
           <div className="flex flex-col items-center gap-6 mt-12">
             <Button
-              className="h-14 px-10 rounded-2xl text-lg font-medium bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-lg hover:shadow-xl transition-all duration-300"
+              className="h-14 px-10 rounded-2xl text-lg font-medium bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
               size="lg"
               asChild
             >
@@ -91,8 +96,8 @@ export function Hero() {
             </Button>
             <p className="text-base text-muted-foreground/70">
               Already exploring?{" "}
-              <Link 
-                href="/sign-in" 
+              <Link
+                href="/sign-in"
                 className="text-primary hover:text-primary/80 font-medium transition-colors"
               >
                 Sign In <ArrowRight className="inline h-4 w-4 ml-1" />
