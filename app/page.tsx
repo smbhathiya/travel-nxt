@@ -13,18 +13,12 @@ export default function Home() {
   const { isSignedIn } = useAuth();
 
   return (
-    <div className="relative flex flex-col min-h-screen bg-background">
-      {/* Subtle background pattern */}
-      <div className="fixed inset-0 w-full h-full -z-10 opacity-30">
-        <div className="absolute inset-0 bg-primary/10" />
-        <div className="absolute inset-0 bg-primary/5" />
-      </div>
-
+    <div className="relative flex flex-col min-h-screen bg-transparent">
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative w-full flex-1">
-        <div className="relative z-10">
+      <section className="relative w-full flex-1 bg-transparent">
+        <div className="relative bg-transparent">
           <Hero />
 
           {/* Spacing */}

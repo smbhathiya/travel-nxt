@@ -1,29 +1,29 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@clerk/nextjs";
-import { Sparkles, ArrowRight, Star, MapPin, Zap } from "lucide-react";
+import { Sparkles, ArrowRight, Zap } from "lucide-react";
 
 export function Hero() {
   const { isSignedIn } = useAuth();
 
   return (
-    <div className="relative container max-w-7xl mx-auto flex flex-col items-center justify-center gap-4 py-12 sm:py-16 md:py-20 text-center px-4">
+    <div className="relative rounded-none mx-auto flex flex-col items-center justify-center gap-8 py-24 sm:py-32 md:py-40 text-center px-4 bg-transparent">
       {/* Background image */}
-      <div className="absolute inset-0 w-full h-full -z-20 rounded-3xl overflow-hidden">
-        <img
+      <div className="absolute inset-0 w-full h-full -z-10 rounded-none overflow-hidden bg-transparent">
+        <Image
           src="/landing/landing-01.jpg"
           alt="Sri Lanka landscape"
-          className="w-full h-full object-cover opacity-20 blur-sm"
+          className="w-full h-full object-cover rounded-none blur-sm opacity-20"
           draggable={false}
+          width={1920}
+          height={1080}
         />
-        <div className="absolute inset-0 bg-background/80" />
       </div>
 
       {/* Decorative elements */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl -z-10" />
 
       {isSignedIn ? (
         // Content for authenticated users
