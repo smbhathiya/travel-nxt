@@ -4,6 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "../components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { UserOnboarding } from "../components/UserOnboarding";
+import ClientLayout from "@/components/layout/client-layout";
+import RouteLoader from "@/components/layout/route-loader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -54,7 +56,9 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <UserOnboarding>
-              {children}
+              <ClientLayout>
+                <RouteLoader>{children}</RouteLoader>
+              </ClientLayout>
             </UserOnboarding>
           </ThemeProvider>
         </ClerkProvider>
