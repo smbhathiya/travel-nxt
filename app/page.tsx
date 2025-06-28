@@ -13,31 +13,33 @@ export default function Home() {
   const { isSignedIn } = useAuth();
 
   return (
-    <div className="relative flex flex-col min-h-screen bg-background text-foreground">
-      <div className="fixed inset-0 w-full h-full -z-10">
-        <img
-          src="/landing/landing-01.jpg"
-          alt="Travel background"
-          className="w-full h-full object-cover opacity-20"
-          draggable={false}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/50 to-background/80" />
+    <div className="relative flex flex-col min-h-screen bg-gradient-to-br from-background via-background to-background/95">
+      {/* Subtle background pattern */}
+      <div className="fixed inset-0 w-full h-full -z-10 opacity-30">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,rgba(0,191,255,0.15),rgba(255,255,255,0))]" />
       </div>
+      
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative w-full">
+      <section className="relative w-full flex-1">
         <div className="relative z-10">
           <Hero />
-          <div className="h-4 sm:h-6" />
+          
+          {/* Spacing */}
+          <div className="h-8 sm:h-12" />
+          
           {!isSignedIn && <HowItWorks />}
 
           <Features />
+          
+          {/* Spacing */}
           <div className="h-16 sm:h-24" />
         </div>
       </section>
 
-      {!isSignedIn && <Testimonials />}
+      <Testimonials />
 
       <CTASection />
 
