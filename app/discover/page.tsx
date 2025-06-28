@@ -72,6 +72,7 @@ export default function FindDestinationsPage() {
     new Set()
   );
   const [interestsLoading, setInterestsLoading] = useState(true);
+  const [recommendationsFetched, setRecommendationsFetched] = useState(false);
 
   const fetchUserInterests = useCallback(async () => {
     if (!user) return;
@@ -93,7 +94,7 @@ export default function FindDestinationsPage() {
   }, [user]);
 
   const fetchRecommendations = useCallback(async () => {
-    if (!hasInterests) return;
+    if (!hasInterests || isLoading || recommendationsFetched) return; // Prevent multiple calls and re-fetching
 
     setIsLoading(true);
     setIsWeatherLoading(true);
@@ -110,6 +111,7 @@ export default function FindDestinationsPage() {
       const data = await response.json();
       const recs = data.recommendations || [];
       setRecommendations(recs);
+      setRecommendationsFetched(true); // Mark as fetched
 
       // Fetch weather data for the recommended locations
       if (recs.length > 0) {
@@ -145,7 +147,7 @@ export default function FindDestinationsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [hasInterests]);
+  }, [hasInterests, isLoading, recommendationsFetched]);
 
   // Fetch user bookmarks
   const fetchBookmarks = useCallback(async () => {
@@ -172,14 +174,7 @@ export default function FindDestinationsPage() {
     fetchUserInterests();
   }, [fetchUserInterests]);
 
-  // Auto-fetch recommendations when user has interests
-  useEffect(() => {
-    if (hasInterests && userInterests.length > 0 && !isLoading) {
-      fetchRecommendations();
-    }
-  }, [hasInterests, userInterests, fetchRecommendations, isLoading]);
-
-  // Auto-fetch recommendations when user has interests
+  // Auto-fetch recommendations when user has interests and is not loading
   useEffect(() => {
     if (hasInterests && userInterests.length > 0) {
       fetchRecommendations();
@@ -547,6 +542,8 @@ export default function FindDestinationsPage() {
                                         <Image
                                           src={`https://openweathermap.org/img/wn/${day.icon}.png`}
                                           alt={day.description}
+                                          width={32}
+                                          height={32}
                                           className="w-8 h-8 mx-auto mb-1"
                                         />
                                         <div className="text-xs font-medium">

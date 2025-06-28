@@ -1,6 +1,4 @@
 // Weather service using OpenWeather API and Gemini API
-// Free tier provides 5-day forecast with 3-hour intervals
-
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export interface WeatherForecast {
@@ -23,27 +21,23 @@ const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const OPENWEATHER_BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
-// Initialize Gemini AI
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
-// Cache for descriptions to avoid rate limiting
 const descriptionCache = new Map<string, string>();
 
-// City name mappings for better weather API success
 const cityMappings: Record<string, string> = {
   'Bentota': 'Bentota',
-  'Kalkudah': 'Batticaloa', // Nearby major city
-  'Nilaveli': 'Trincomalee', // Nearby major city
-  'Mirissa': 'Matara', // Nearby major city
+  'Kalkudah': 'Batticaloa', 
+  'Nilaveli': 'Trincomalee',
+  'Mirissa': 'Matara', 
   'Colombo': 'Colombo',
-  'Arugam Bay': 'Ampara', // Nearby major city
-  'Hikkaduwa': 'Galle', // Nearby major city
+  'Arugam Bay': 'Ampara', 
+  'Hikkaduwa': 'Galle',
   'Trincomalee': 'Trincomalee',
-  'Unawatuna': 'Galle', // Nearby major city
+  'Unawatuna': 'Galle',
   'Kalutara': 'Kalutara'
 };
 
-// Generate fallback weather data for Sri Lanka
 function generateFallbackWeather(): WeatherForecast[] {
   const today = new Date();
   const fallbackData: WeatherForecast[] = [];
@@ -58,22 +52,20 @@ function generateFallbackWeather(): WeatherForecast[] {
         month: 'short', 
         day: 'numeric' 
       }),
-      temp: Math.round(27 + Math.random() * 5), // 27-32°C typical for Sri Lanka
+      temp: Math.round(27 + Math.random() * 5), 
       description: i % 2 === 0 ? 'partly cloudy' : 'scattered showers',
       icon: i % 2 === 0 ? '02d' : '10d',
-      humidity: Math.round(75 + Math.random() * 15), // 75-90% typical
-      windSpeed: Math.round(8 + Math.random() * 7) // 8-15 km/h typical
+      humidity: Math.round(75 + Math.random() * 15),
+      windSpeed: Math.round(8 + Math.random() * 7) 
     });
   }
   
   return fallbackData;
 }
 
-// Rate limiting for Gemini API
 let lastGeminiCall = 0;
-const GEMINI_RATE_LIMIT = 2000; // 2 seconds between calls
+const GEMINI_RATE_LIMIT = 2000; 
 
-// Delay function
 function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -85,13 +77,12 @@ export async function get5DayForecast(city: string): Promise<WeatherForecast[]> 
   }
 
   try {
-    // Use city mapping if available, otherwise try variations
     const mappedCity = cityMappings[city] || city;
     const cityVariations = [
       mappedCity,
       city,
-      city.split(' ')[0], // Try first word only
-      city.replace(/\s+/g, ''), // Remove spaces
+      city.split(' ')[0], 
+      city.replace(/\s+/g, ''), 
     ];
 
     let response;
@@ -119,8 +110,7 @@ export async function get5DayForecast(city: string): Promise<WeatherForecast[]> 
       return generateFallbackWeather();
     }
     
-    // Process the forecast data - OpenWeather returns 40 entries (5 days * 8 entries per day)
-    // We'll take one entry per day (around noon time)
+ 
     const dailyForecasts: WeatherForecast[] = [];
     const processedDates = new Set();
 
@@ -128,11 +118,10 @@ export async function get5DayForecast(city: string): Promise<WeatherForecast[]> 
       const date = new Date(item.dt * 1000);
       const dateString = date.toDateString();
       
-      // Skip if we already have this date, and prefer entries around noon (12:00)
       if (processedDates.has(dateString)) continue;
       
       const hour = date.getHours();
-      if (hour < 9 || hour > 15) continue; // Only take entries between 9 AM and 3 PM
+      if (hour < 9 || hour > 15) continue; 
       
       processedDates.add(dateString);
       
@@ -146,7 +135,7 @@ export async function get5DayForecast(city: string): Promise<WeatherForecast[]> 
         description: item.weather[0].description,
         icon: item.weather[0].icon,
         humidity: item.main.humidity,
-        windSpeed: Math.round(item.wind.speed * 3.6) // Convert m/s to km/h
+        windSpeed: Math.round(item.wind.speed * 3.6) 
       });
 
       if (dailyForecasts.length >= 5) break;
@@ -160,7 +149,6 @@ export async function get5DayForecast(city: string): Promise<WeatherForecast[]> 
 }
 
 export async function getWeatherForLocations(locations: Array<{Location_Name: string, Located_City: string}>): Promise<LocationWeather[]> {
-  // Process locations in batches to avoid rate limiting
   const batchSize = 3;
   const results: LocationWeather[] = [];
   
@@ -169,10 +157,8 @@ export async function getWeatherForLocations(locations: Array<{Location_Name: st
     
     const batchPromises = batch.map(async (location) => {
       try {
-        // Fetch weather first (more likely to succeed)
         const forecast = await get5DayForecast(location.Located_City);
         
-        // Then fetch description with rate limiting
         const description = await getLocationDescription(location.Location_Name, location.Located_City);
         
         return {
@@ -183,7 +169,6 @@ export async function getWeatherForLocations(locations: Array<{Location_Name: st
         };
       } catch (error) {
         console.error(`Error fetching data for ${location.Location_Name}:`, error);
-        // Return basic data with fallback description if there's an error
         return {
           location: location.Location_Name,
           city: location.Located_City,
@@ -197,9 +182,8 @@ export async function getWeatherForLocations(locations: Array<{Location_Name: st
       const batchResults = await Promise.all(batchPromises);
       results.push(...batchResults);
       
-      // Add delay between batches to avoid rate limiting
       if (i + batchSize < locations.length) {
-        await delay(1000); // 1 second delay between batches
+        await delay(1000); 
       }
     } catch (error) {
       console.error('Error processing batch:', error);
@@ -214,13 +198,11 @@ export function getWeatherIcon(iconCode: string): string {
 }
 
 export async function getLocationDescription(locationName: string, city: string): Promise<string> {
-  // Check cache first
   const cacheKey = `${locationName}-${city}`;
   if (descriptionCache.has(cacheKey)) {
     return descriptionCache.get(cacheKey)!;
   }
 
-  // Fallback description if no Gemini API
   const fallbackDescription = `${locationName} is a beautiful destination in ${city}, Sri Lanka, known for its natural beauty and cultural significance.`;
   
   if (!genAI) {
@@ -230,7 +212,6 @@ export async function getLocationDescription(locationName: string, city: string)
   }
 
   try {
-    // Rate limiting - ensure at least 2 seconds between calls
     const now = Date.now();
     const timeSinceLastCall = now - lastGeminiCall;
     if (timeSinceLastCall < GEMINI_RATE_LIMIT) {
@@ -238,11 +219,10 @@ export async function getLocationDescription(locationName: string, city: string)
     }
     lastGeminiCall = Date.now();
 
-    // Use the updated model name for Gemini 1.5
     const model = genAI.getGenerativeModel({ 
       model: "gemini-1.5-flash",
       generationConfig: {
-        maxOutputTokens: 100, // Limit output to reduce rate limiting
+        maxOutputTokens: 100, 
         temperature: 0.7,
       },
     });
