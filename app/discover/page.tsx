@@ -26,8 +26,8 @@ import {
   Bookmark,
   BookmarkCheck,
 } from "lucide-react";
-import { Navbar } from "../components/Navbar";
-import { Footer } from "../components/Footer";
+import { Navbar } from "../../components/landing/Navbar";
+import { Footer } from "../../components/landing/Footer";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -349,35 +349,35 @@ export default function FindDestinationsPage() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-center gap-3 mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-muted-foreground">
-                      Your interests:
-                    </span>
-                    <div className="flex flex-wrap gap-1">
-                      {userInterests.slice(0, 3).map((interest, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-block bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full"
-                        >
-                          {interest}
-                        </span>
-                      ))}
-                      {userInterests.length > 3 && (
-                        <span className="inline-block bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
-                          +{userInterests.length - 3} more
-                        </span>
-                      )}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Your interests:
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {userInterests.slice(0, 3).map((interest, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-block bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full"
+                          >
+                            {interest}
+                          </span>
+                        ))}
+                        {userInterests.length > 3 && (
+                          <span className="inline-block bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
+                            +{userInterests.length - 3} more
+                          </span>
+                        )}
+                      </div>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => router.push("/interests")}
+                      className="text-xs h-auto py-1 px-3 border border-primary/20 hover:border-primary"
+                    >
+                      Edit Interests
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => router.push("/interests")}
-                    className="text-xs h-auto py-1 px-3 border border-primary/20 hover:border-primary"
-                  >
-                    Edit Interests
-                  </Button>
-                </div>
                 )}
 
                 {!interestsLoading && (

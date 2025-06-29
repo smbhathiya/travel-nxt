@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Globe, Map, Heart, History } from "lucide-react";
-import { Navbar } from "../components/Navbar";
-import { Footer } from "../components/Footer";
+import { Navbar } from "../../components/landing/Navbar";
+import { Footer } from "../../components/landing/Footer";
 import { useUser } from "@clerk/nextjs";
 
 type UserData = {

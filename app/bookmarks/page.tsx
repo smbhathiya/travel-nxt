@@ -3,9 +3,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Star, Loader2, Trash2, ExternalLink, Bookmark } from "lucide-react";
-import { Navbar } from "../components/Navbar";
-import { Footer } from "../components/Footer";
+import {
+  MapPin,
+  Star,
+  Loader2,
+  Trash2,
+  ExternalLink,
+  Bookmark,
+} from "lucide-react";
+import { Navbar } from "../../components/landing/Navbar";
+import { Footer } from "../../components/landing/Footer";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 
@@ -30,13 +37,13 @@ export default function BookmarksPage() {
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/bookmarks');
+      const response = await fetch("/api/bookmarks");
       if (response.ok) {
         const data = await response.json();
         setBookmarks(data.bookmarks);
       }
     } catch (error) {
-      console.error('Error fetching bookmarks:', error);
+      console.error("Error fetching bookmarks:", error);
     } finally {
       setIsLoading(false);
     }
@@ -51,13 +58,13 @@ export default function BookmarksPage() {
   const handleDeleteBookmark = async (bookmark: BookmarkData) => {
     if (!user) return;
 
-    setDeleteLoading(prev => new Set(prev).add(bookmark.id));
+    setDeleteLoading((prev) => new Set(prev).add(bookmark.id));
 
     try {
-      const response = await fetch('/api/bookmarks', {
-        method: 'DELETE',
+      const response = await fetch("/api/bookmarks", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           locationName: bookmark.locationName,
@@ -66,12 +73,12 @@ export default function BookmarksPage() {
       });
 
       if (response.ok) {
-        setBookmarks(prev => prev.filter(b => b.id !== bookmark.id));
+        setBookmarks((prev) => prev.filter((b) => b.id !== bookmark.id));
       }
     } catch (error) {
-      console.error('Error deleting bookmark:', error);
+      console.error("Error deleting bookmark:", error);
     } finally {
-      setDeleteLoading(prev => {
+      setDeleteLoading((prev) => {
         const newSet = new Set(prev);
         newSet.delete(bookmark.id);
         return newSet;
@@ -81,8 +88,10 @@ export default function BookmarksPage() {
 
   const handleViewMore = (bookmark: BookmarkData) => {
     const searchQuery = `${bookmark.locationName} ${bookmark.locatedCity} Sri Lanka tourist attractions`;
-    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
-    window.open(googleSearchUrl, '_blank', 'noopener,noreferrer');
+    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(
+      searchQuery
+    )}`;
+    window.open(googleSearchUrl, "_blank", "noopener,noreferrer");
   };
 
   if (!user) {
@@ -124,7 +133,9 @@ export default function BookmarksPage() {
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="ml-2 text-muted-foreground">Loading your bookmarks...</span>
+              <span className="ml-2 text-muted-foreground">
+                Loading your bookmarks...
+              </span>
             </div>
           ) : bookmarks.length === 0 ? (
             <Card className="max-w-md mx-auto">
@@ -132,7 +143,8 @@ export default function BookmarksPage() {
                 <Bookmark className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No bookmarks yet</h3>
                 <p className="text-muted-foreground mb-4">
-                  Start exploring destinations and bookmark the ones you&apos;d like to visit.
+                  Start exploring destinations and bookmark the ones you&apos;d
+                  like to visit.
                 </p>
                 <Button asChild>
                   <a href="/discover">Discover Locations</a>
@@ -142,7 +154,10 @@ export default function BookmarksPage() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {bookmarks.map((bookmark) => (
-                <Card key={bookmark.id} className="overflow-hidden hover:shadow-lg transition-all duration-300">
+                <Card
+                  key={bookmark.id}
+                  className="overflow-hidden hover:shadow-lg transition-all duration-300"
+                >
                   <CardContent className="p-6">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
@@ -161,12 +176,16 @@ export default function BookmarksPage() {
                         {/* Rating */}
                         <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-full">
                           <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm font-semibold">{bookmark.rating.toFixed(1)}</span>
+                          <span className="text-sm font-semibold">
+                            {bookmark.rating.toFixed(1)}
+                          </span>
                         </div>
                         {/* Match Score */}
                         <div className="flex items-center gap-1 bg-primary/10 dark:bg-primary/20 px-2 py-1 rounded-full">
                           <div className="h-4 w-4 rounded-full bg-primary flex items-center justify-center">
-                            <span className="text-xs font-bold text-primary-foreground">%</span>
+                            <span className="text-xs font-bold text-primary-foreground">
+                              %
+                            </span>
                           </div>
                           <span className="text-sm font-semibold text-primary">
                             {(bookmark.personalizedScore * 100).toFixed(0)}
@@ -174,7 +193,7 @@ export default function BookmarksPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Location type */}
                     <div className="mb-4">
                       <span className="inline-block bg-secondary/50 text-secondary-foreground text-sm font-medium px-3 py-1 rounded-full capitalize">
@@ -184,11 +203,15 @@ export default function BookmarksPage() {
 
                     {/* Bookmarked date */}
                     <div className="mb-4 text-xs text-muted-foreground">
-                      Bookmarked on {new Date(bookmark.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                      Bookmarked on{" "}
+                      {new Date(bookmark.createdAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )}
                     </div>
 
                     {/* Action Buttons */}
@@ -202,7 +225,7 @@ export default function BookmarksPage() {
                         <ExternalLink className="h-4 w-4 mr-2" />
                         More Info
                       </Button>
-                      
+
                       <Button
                         variant="destructive"
                         size="sm"

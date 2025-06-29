@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
-import { Navbar } from "../components/Navbar";
-import { Footer } from "../components/Footer";
+import { Navbar } from "../../components/landing/Navbar";
+import { Footer } from "../../components/landing/Footer";
 import {
   Waves,
   Mountain,
@@ -172,7 +172,10 @@ export default function InterestsPage() {
               {/* Skeleton for interest cards */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-8">
                 {Array.from({ length: 11 }).map((_, index) => (
-                  <Card key={index} className="p-4 flex flex-col items-center justify-center aspect-square">
+                  <Card
+                    key={index}
+                    className="p-4 flex flex-col items-center justify-center aspect-square"
+                  >
                     <Skeleton className="h-6 w-6 mb-2" />
                     <Skeleton className="h-4 w-16" />
                   </Card>

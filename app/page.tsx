@@ -1,12 +1,12 @@
 "use client";
 
-import { Navbar } from "./components/Navbar";
-import { Footer } from "./components/Footer";
-import { Hero } from "./components/Hero";
-import { HowItWorks } from "./components/HowItWorks";
-import { Features } from "./components/Features";
-import { Testimonials } from "./components/Testimonials";
-import { CTASection } from "./components/CTASection";
+import { Navbar } from "../components/landing/Navbar";
+import { Footer } from "../components/landing/Footer";
+import { Hero } from "../components/landing/Hero";
+import { HowItWorks } from "../components/landing/HowItWorks";
+import { Features } from "../components/landing/Features";
+import { Testimonials } from "../components/landing/Testimonials";
+import { CTASection } from "../components/landing/CTASection";
 import { useAuth } from "@clerk/nextjs";
 
 export default function Home() {
