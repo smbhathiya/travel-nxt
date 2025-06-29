@@ -12,8 +12,8 @@ export function CTASection() {
       <div className="absolute inset-0 bg-primary" />
       
       {/* Decorative elements */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-      <div className="absolute bottom-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+      <div className="absolute top-0 left-0 w-96 h-96 bg-white/10  blur-3xl -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-80 h-80 bg-white/5 blur-3xl translate-x-1/2 translate-y-1/2" />
       
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40" />
@@ -22,7 +22,7 @@ export function CTASection() {
         {isSignedIn ? (
           <div className="text-center text-white">
             {/* Badge */}
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white/90 text-sm font-medium mb-8">
+            <div className="inline-flex items-center px-4 py-2 rounded-full  bg-white/20 backdrop-blur-sm text-white/90 text-sm font-medium mb-8">
               <Rocket className="h-4 w-4 mr-2" />
               Ready for Adventure?
             </div>
@@ -43,7 +43,7 @@ export function CTASection() {
         ) : (
           <div className="text-center text-white">
             {/* Badge */}
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white/90 text-sm font-medium mb-8">
+            <div className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm text-white/90 text-sm font-medium mb-8">
               <Star className="h-4 w-4 mr-2" />
               Join Thousands of Travelers
             </div>

@@ -4,7 +4,7 @@ export function Features() {
   return (
     <div className="container max-w-7xl mx-auto px-4">
       <div className="text-center mb-16">
-        <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+        <div className="inline-flex items-center px-4 py-2 rounded-full  bg-primary/10 text-primary text-sm font-medium mb-6">
           Why TravelNxt?
         </div>
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
@@ -43,12 +43,12 @@ export function Features() {
           },
         ].map((feature, idx) => (
           <div key={idx} className="group">
-            <div className="relative bg-white/5 backdrop-blur-sm rounded-3xl p-8 h-full border border-white/10 hover:border-white/20 transition-all duration-300 hover:transform hover:scale-105">
+            <div className="relative bg-white/5 backdrop-blur-sm  p-8 h-full border border-white/10 hover:border-white/20 transition-all duration-300 hover:transform hover:scale-105">
               {/* Gradient background on hover */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 rounded-3xl transition-opacity duration-300`} />
+              <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5  transition-opacity duration-300`} />
               
               {/* Icon */}
-              <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.gradient} text-white mb-6 shadow-lg`}>
+              <div className={`inline-flex items-center justify-center w-16 h-16  bg-gradient-to-br ${feature.gradient} text-white mb-6 shadow-lg`}>
                 {feature.icon}
               </div>
               

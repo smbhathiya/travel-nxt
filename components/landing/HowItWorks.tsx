@@ -14,7 +14,7 @@ export function HowItWorks() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16">
         <div className="flex flex-col items-center text-center">
-          <div className="bg-primary/10 dark:bg-primary/20 rounded-full p-6 w-20 h-20 mb-6 flex items-center justify-center">
+          <div className="bg-primary/10 dark:bg-primary/20  p-6 w-20 h-20 mb-6 flex items-center justify-center">
             <Heart className="h-8 w-8 text-primary" />
           </div>
           <h3 className="font-semibold text-xl mb-4">Share Your Interests</h3>
@@ -25,7 +25,7 @@ export function HowItWorks() {
         </div>
 
         <div className="flex flex-col items-center text-center">
-          <div className="bg-primary/10 dark:bg-primary/20 rounded-full p-6 w-20 h-20 mb-6 flex items-center justify-center">
+          <div className="bg-primary/10 dark:bg-primary/20 p-6 w-20 h-20 mb-6 flex items-center justify-center">
             <Zap className="h-8 w-8 text-primary" />
           </div>
           <h3 className="font-semibold text-xl mb-4">AI Magic</h3>
@@ -36,7 +36,7 @@ export function HowItWorks() {
         </div>
 
         <div className="flex flex-col items-center text-center">
-          <div className="bg-primary/10 dark:bg-primary/20 rounded-full p-6 w-20 h-20 mb-6 flex items-center justify-center">
+          <div className="bg-primary/10 dark:bg-primary/20  p-6 w-20 h-20 mb-6 flex items-center justify-center">
             <MapPin className="h-8 w-8 text-primary" />
           </div>
           <h3 className="font-semibold text-xl mb-4">Discover & Explore</h3>

@@ -19,7 +19,7 @@ export function Hero() {
       {isSignedIn ? (
         <>
           <div className="space-y-6">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+            <div className="inline-flex items-center px-4 py-2 rounded-full  bg-primary/10 text-primary text-sm font-medium">
               <Sparkles className="h-4 w-4 mr-2" />
               Ready for your next adventure?
             </div>
@@ -33,7 +33,7 @@ export function Hero() {
 
           <div className="flex flex-col sm:flex-row items-center gap-4 mt-12">
             <Button
-              className="h-14 px-10 rounded-2xl text-lg font-medium bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
+              className="h-14 px-10 text-lg font-medium bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
               size="lg"
               asChild
             >
@@ -44,7 +44,7 @@ export function Hero() {
             </Button>
             <Button
               variant="outline"
-              className="h-14 px-10 rounded-2xl text-lg font-medium border-2 hover:bg-accent/30 bg-accent/20 transition-all duration-300"
+              className="h-14 px-10  text-lg font-medium border-2 hover:bg-accent/30 bg-accent/20 transition-all duration-300"
               size="lg"
               asChild
             >
@@ -56,7 +56,7 @@ export function Hero() {
         // Content for non-authenticated users
         <>
           <div className="space-y-6">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+            <div className="inline-flex items-center px-4 py-2  bg-primary/10 text-primary text-sm font-medium">
               <Zap className="h-4 w-4 mr-2" />
               AI-Powered Travel Discovery
             </div>
@@ -75,7 +75,7 @@ export function Hero() {
 
           <div className="flex flex-col items-center gap-6 mt-12">
             <Button
-              className="h-14 px-10 rounded-2xl text-lg font-medium bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
+              className="h-14 px-10  text-lg font-medium bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
               size="lg"
               asChild
             >

@@ -61,7 +61,7 @@ export function Testimonials() {
                   &quot;{testimonial.text}&quot;
                 </p>
                 <div className="mt-6 flex items-center">
-                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <div className="h-10 w-10  bg-primary/20 flex items-center justify-center">
                     <span className="font-medium text-primary">
                       {testimonial.initials}
                     </span>
