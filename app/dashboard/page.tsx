@@ -3,10 +3,11 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import { Globe, Map, Heart, History } from "lucide-react";
+import { Globe, Heart, History } from "lucide-react";
 import { Navbar } from "../../components/landing/Navbar";
 import { Footer } from "../../components/landing/Footer";
 import { useUser } from "@clerk/nextjs";
+import { TopRatedLocations } from "../../components/TopRatedLocations";
 
 type UserData = {
   interests: string[];
@@ -140,28 +141,7 @@ export default function Dashboard() {
             )}
 
             <div className="mt-8">
-              <h2 className="text-2xl font-bold mb-4">Recommended For You</h2>
-              {userData.interests?.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <Card className="overflow-hidden">
-                    <div className="h-48 bg-muted flex items-center justify-center">
-                      <Map className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-medium">
-                        Find personalized recommendations
-                      </h3>
-                      <Button asChild className="w-full mt-4" size="sm">
-                        <Link href="/discover">Get Started</Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
-              ) : (
-                <p className="text-muted-foreground">
-                  Add your interests to see personalized recommendations
-                </p>
-              )}
+              <TopRatedLocations />
             </div>
           </div>
         </div>
