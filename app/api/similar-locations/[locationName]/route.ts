@@ -13,11 +13,11 @@ interface SimilarLocation {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { locationName: string } }
+  { params }: { params: Promise<{ locationName: string }> }
 ) {
   try {
-    // Get the location name from the URL
-    const locationName = params.locationName;
+    // Await params before accessing properties (Next.js 15 requirement)
+    const { locationName } = await params;
     
     if (!locationName) {
       return NextResponse.json(
