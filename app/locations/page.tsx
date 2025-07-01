@@ -1,23 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { 
-  MapPin, 
-  Search
-} from "lucide-react";
+import { MapPin } from "lucide-react";
 import { Navbar } from "../../components/landing/Navbar";
 import { Footer } from "../../components/landing/Footer";
-import { locationCategories, searchLocations } from "../../lib/location-data";
+import { locationCategories } from "../../lib/location-data";
 import { CategoryGrid } from "@/components/locations/CategoryGrid";
+import { LocationSearchPopover } from "@/components/locations/LocationSearchPopover";
 import { useRouter, useSearchParams } from "next/navigation";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 export default function LocationSearch() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -29,29 +24,10 @@ export default function LocationSearch() {
       setSelectedCategory(categoryParam);
     }
   }, [searchParams]);
-  
-  useEffect(() => {
-    if (searchQuery.length > 0) {
-      const results = searchLocations(searchQuery);
-      setFilteredLocations(results);
-      setShowDropdown(true);
-    } else {
-      setFilteredLocations([]);
-      setShowDropdown(false);
-    }
-  }, [searchQuery]);
 
+  // Handle location selection from category cards
   const handleLocationSelect = (location: string) => {
-    setSearchQuery(location);
-    setShowDropdown(false);
     router.push(`/locations/${encodeURIComponent(location)}`);
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery) {
-      router.push(`/locations/${encodeURIComponent(searchQuery)}`);
-    }
   };
 
   return (
@@ -67,50 +43,16 @@ export default function LocationSearch() {
             </p>
           </div>
 
-          <div className="max-w-2xl mx-auto relative">
-            <form onSubmit={handleSearch} className="flex gap-2 mb-8">
-              <div className="relative flex-1">
-                <Input
-                  type="text"
-                  placeholder="Search for a destination..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pr-10"
-                />
-                {searchQuery && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-                    onClick={() => setSearchQuery("")}
-                  >
-                    &times;
-                  </Button>
-                )}
+          <div className="max-w-2xl mx-auto relative mb-8">
+            <ErrorBoundary fallback={
+              <div className="p-4 border rounded-md bg-accent">
+                <p className="text-center">Sorry, the search component couldn&apos;t be loaded. Please try refreshing the page.</p>
               </div>
-              <Button type="submit">
-                <Search className="h-4 w-4 mr-2" />
-                Search
-              </Button>
-            </form>
-
-            {showDropdown && filteredLocations.length > 0 && (
-              <div className="absolute z-10 w-full bg-background shadow-lg rounded-lg border border-border mt-1 max-h-80 overflow-y-auto">
-                <ul>
-                  {filteredLocations.map((location, index) => (
-                    <li
-                      key={index}
-                      className="px-4 py-3 hover:bg-accent cursor-pointer flex items-center gap-2 border-b border-border last:border-b-0"
-                      onClick={() => handleLocationSelect(location)}
-                    >
-                      <MapPin className="h-4 w-4" />
-                      <span>{location}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            }>
+              <Suspense fallback={<div className="h-12 bg-accent animate-pulse rounded-md"></div>}>
+                <LocationSearchPopover className="w-full" />
+              </Suspense>
+            </ErrorBoundary>
           </div>
 
           {selectedCategory ? (
