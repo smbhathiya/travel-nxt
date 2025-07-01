@@ -22,7 +22,7 @@ interface BookmarkData {
   locatedCity: string;
   locationType: string;
   rating: number;
-  personalizedScore: number;
+  personalizedScore: number; // This is now Sentiment_Score from the API
   createdAt: string;
 }
 

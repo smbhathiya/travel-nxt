@@ -37,7 +37,8 @@ interface Recommendation {
   Located_City: string;
   Location_Type: string;
   Rating: number;
-  personalized_score: number;
+  Sentiment: string;
+  Sentiment_Score: number;
 }
 
 interface WeatherForecast {
@@ -109,7 +110,8 @@ export default function FindDestinationsPage() {
       }
 
       const data = await response.json();
-      const recs = data.recommendations || [];
+      // The response is now directly an array of recommendations
+      const recs = Array.isArray(data) ? data : [];
       setRecommendations(recs);
       setRecommendationsFetched(true); // Mark as fetched
 
@@ -230,7 +232,7 @@ export default function FindDestinationsPage() {
             locatedCity: rec.Located_City,
             locationType: rec.Location_Type,
             rating: rec.Rating,
-            personalizedScore: rec.personalized_score,
+            personalizedScore: rec.Sentiment_Score,
           }),
         });
 
@@ -440,25 +442,37 @@ export default function FindDestinationsPage() {
                                 {rec.Rating.toFixed(1)}
                               </span>
                             </div>
-                            {/* Match Score - same size as rating */}
-                            <div className="flex items-center gap-1 bg-primary/10 dark:bg-primary/20 px-2 py-1 rounded-full">
-                              <div className="h-4 w-4 rounded-full bg-primary flex items-center justify-center">
-                                <span className="text-xs font-bold text-primary-foreground">
-                                  %
-                                </span>
-                              </div>
-                              <span className="text-sm font-semibold text-primary">
-                                {(rec.personalized_score * 100).toFixed(0)}
-                              </span>
-                            </div>
                           </div>
                         </div>
 
-                        {/* Location type */}
-                        <div className="mb-4">
+                        {/* Location type and sentiment */}
+                        <div className="mb-2 flex flex-wrap gap-2">
                           <span className="inline-block bg-secondary/50 text-secondary-foreground text-sm font-medium px-3 py-1 rounded-full capitalize">
                             {rec.Location_Type}
                           </span>
+                        </div>
+                        
+                        {/* User sentiment feedback - more descriptive */}
+                        <div className="mb-4">
+                          <div className={`inline-flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-md ${
+                            rec.Sentiment === "Positive" 
+                              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" 
+                              : rec.Sentiment === "Negative"
+                              ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                              : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+                          }`}>
+                            {rec.Sentiment === "Positive" ? (
+                              <>
+                                <Star className="h-4 w-4 fill-current" />
+                                <span>{(rec.Sentiment_Score * 100).toFixed(0)}% of visitors rated this location positively</span>
+                              </>
+                            ) : (
+                              <>
+                                <Star className="h-4 w-4 fill-current" />
+                                <span>{(rec.Sentiment_Score * 100).toFixed(0)}% of visitors had {rec.Sentiment.toLowerCase()} experiences</span>
+                              </>
+                            )}
+                          </div>
                         </div>
 
                         {/* Location Description */}

@@ -29,7 +29,7 @@ export async function POST() {
 
     // Call Python API
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-    const response = await fetch(`${apiBaseUrl}/recommend`, {
+    const response = await fetch(`${apiBaseUrl}/by-interest`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -45,7 +45,22 @@ export async function POST() {
 
     const recommendations = await response.json();
     
-    return NextResponse.json(recommendations);
+    // Define the recommendation type
+    interface Recommendation {
+      Location_Name: string;
+      Located_City: string;
+      Location_Type: string;
+      Rating: number;
+      Sentiment: string;
+      Sentiment_Score: number;
+    }
+    
+    // Limit the results to 6 and ensure they're sorted by sentiment score
+    const limitedRecommendations = recommendations
+      .sort((a: Recommendation, b: Recommendation) => b.Sentiment_Score - a.Sentiment_Score)
+      .slice(0, 6);
+    
+    return NextResponse.json(limitedRecommendations);
   } catch (error) {
     console.error('Error fetching recommendations:', error);
     return NextResponse.json(
