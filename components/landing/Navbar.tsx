@@ -33,6 +33,12 @@ export function Navbar() {
               Discover
             </Link>
             <Link
+              href="/locations"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Find Locations
+            </Link>
+            <Link
               href="/interests"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
@@ -90,6 +96,13 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Discover Sri Lanka
+                </Link>
+                <Link
+                  href="/locations"
+                  className="px-3 py-2 rounded-md hover:bg-muted"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Find Locations
                 </Link>
                 <Link
                   href="/interests"
