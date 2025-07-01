@@ -7,6 +7,7 @@ import { HowItWorks } from "../components/landing/HowItWorks";
 import { Features } from "../components/landing/Features";
 import { Testimonials } from "../components/landing/Testimonials";
 import { CTASection } from "../components/landing/CTASection";
+import { LandingTopRated } from "../components/landing/LandingTopRated";
 import { useAuth } from "@clerk/nextjs";
 
 export default function Home() {
@@ -32,6 +33,8 @@ export default function Home() {
           <div className="h-16 sm:h-24" />
         </div>
       </section>
+      
+      <LandingTopRated />
 
       <Testimonials />
 
