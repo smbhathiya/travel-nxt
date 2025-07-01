@@ -1,57 +1,45 @@
-import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import { PrismaClient } from '@/lib/generated/prisma';
+import { NextRequest, NextResponse } from 'next/server';
 
-const prisma = new PrismaClient();
-
-// Define the recommendation type
-interface Recommendation {
+// Define the SimilarLocation type
+interface SimilarLocation {
   Location_Name: string;
   Located_City: string;
   Location_Type: string;
   Rating: number;
+  similarity: number;
   Sentiment: string;
   Sentiment_Score: number;
 }
 
-export async function POST() {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { locationName: string } }
+) {
   try {
-    const { userId } = await auth();
+    // Get the location name from the URL
+    const locationName = params.locationName;
     
-    if (!userId) {
+    if (!locationName) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Get user interests from database
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    if (!user || !user.interests.length) {
-      return NextResponse.json(
-        { error: 'No interests found. Please set your interests first.' },
+        { error: 'Location name is required' },
         { status: 400 }
       );
     }
 
     // Call Python API with timeout
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+    const encodedLocationName = encodeURIComponent(locationName);
     
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
     try {
-      const response = await fetch(`${apiBaseUrl}/by-interest`, {
-        method: 'POST',
+      const response = await fetch(`${apiBaseUrl}/similar-locations/${encodedLocationName}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          interests: user.interests
-        }),
+        cache: 'no-store',
         signal: controller.signal
       });
       
@@ -67,23 +55,23 @@ export async function POST() {
         );
       }
 
-      const recommendations = await response.json();
+      const similarLocations = await response.json();
       
       // Validate response format
-      if (!Array.isArray(recommendations)) {
-        console.error('Invalid API response format:', recommendations);
+      if (!Array.isArray(similarLocations)) {
+        console.error('Invalid API response format:', similarLocations);
         return NextResponse.json(
           { error: 'Invalid response format from API' },
           { status: 500 }
         );
       }
       
-      // Limit the results to 6 and ensure they're sorted by sentiment score
-      const limitedRecommendations = recommendations
-        .sort((a: Recommendation, b: Recommendation) => b.Sentiment_Score - a.Sentiment_Score)
-        .slice(0, 6);
+      // Ensure data is sorted by similarity (highest first)
+      const sortedLocations = [...similarLocations].sort(
+        (a: SimilarLocation, b: SimilarLocation) => b.similarity - a.similarity
+      );
       
-      return NextResponse.json(limitedRecommendations);
+      return NextResponse.json(sortedLocations);
     } catch (error) {
       clearTimeout(timeout);
       
@@ -98,9 +86,9 @@ export async function POST() {
       throw error; // Let the outer catch handle other errors
     }
   } catch (error) {
-    console.error('Error fetching recommendations:', error);
+    console.error('Error fetching similar locations:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch recommendations. Please try again later.' },
+      { error: 'Failed to fetch similar locations. Please try again later.' },
       { status: 500 }
     );
   }

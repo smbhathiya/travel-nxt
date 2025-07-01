@@ -6,6 +6,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { UserOnboarding } from "../components/UserOnboarding";
 import ClientLayout from "@/components/layout/client-layout";
 import RouteLoader from "@/components/layout/route-loader";
+import { ToasterProvider } from "@/components/ui/toaster-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -60,6 +61,7 @@ export default function RootLayout({
                 <RouteLoader>{children}</RouteLoader>
               </ClientLayout>
             </UserOnboarding>
+            <ToasterProvider />
           </ThemeProvider>
         </ClerkProvider>
       </body>
