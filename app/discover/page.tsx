@@ -25,6 +25,7 @@ import {
   ExternalLink,
   Bookmark,
   BookmarkCheck,
+  RefreshCw,
 } from "lucide-react";
 import { Navbar } from "../../components/landing/Navbar";
 import { Footer } from "../../components/landing/Footer";
@@ -371,45 +372,43 @@ export default function FindDestinationsPage() {
                         )}
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => router.push("/interests")}
-                      className="text-xs h-auto py-1 px-3 border border-primary/20 hover:border-primary"
-                    >
-                      Edit Interests
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => router.push("/interests")}
+                        className="text-xs h-auto py-1 px-3 border border-primary/20 hover:border-primary"
+                      >
+                        Edit Interests
+                      </Button>
+                      
+                      {!interestsLoading && (
+                        <Button
+                          onClick={handleManualRefresh}
+                          disabled={isLoading}
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-full"
+                          title="Refresh recommendations"
+                        >
+                          {isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                          ) : (
+                            <RefreshCw className="h-4 w-4" />
+                          )}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 )}
 
-                {!interestsLoading && (
-                  <>
-                    {isLoading && recommendations.length === 0 ? (
-                      <div className="flex items-center justify-center gap-2 py-4">
-                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                        <span className="text-muted-foreground">
-                          Getting your personalized recommendations...
-                        </span>
-                      </div>
-                    ) : (
-                      <Button
-                        onClick={handleManualRefresh}
-                        disabled={isLoading}
-                        variant="outline"
-                        size="sm"
-                        className="border-primary/20 hover:border-primary"
-                      >
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Refreshing...
-                          </>
-                        ) : (
-                          "Refresh Recommendations"
-                        )}
-                      </Button>
-                    )}
-                  </>
+                {!interestsLoading && isLoading && recommendations.length === 0 && (
+                  <div className="flex items-center justify-center gap-2 py-4">
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    <span className="text-muted-foreground">
+                      Getting your personalized recommendations...
+                    </span>
+                  </div>
                 )}
               </div>
 
