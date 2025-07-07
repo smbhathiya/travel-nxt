@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, ArrowLeft } from "lucide-react";
+import { MapPin, Star, ArrowLeft, Bookmark, BookmarkCheck } from "lucide-react";
 import { Navbar } from "../../../components/landing/Navbar";
 import { Footer } from "../../../components/landing/Footer";
 import { useRouter } from "next/navigation";
@@ -34,6 +34,29 @@ export default function LocationDetails({ params }: { params: Promise<{ id: stri
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
+  // Bookmark handler
+  const handleBookmark = async () => {
+    if (!isSignedIn) {
+      toast({ title: 'Sign in required', description: 'Please sign in to bookmark locations.' });
+      return;
+    }
+    setBookmarkLoading(true);
+    try {
+      const res = await fetch(`/api/bookmarks`, {
+        method: isBookmarked ? 'DELETE' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ locationId: id }),
+      });
+      if (!res.ok) throw new Error('Failed to update bookmark');
+      setIsBookmarked(!isBookmarked);
+      toast({ title: isBookmarked ? 'Bookmark removed' : 'Bookmarked!', description: locationDetails?.name });
+    } catch (err) {
+      toast({ title: 'Error', description: err instanceof Error ? err.message : 'Bookmark action failed' });
+    } finally {
+      setBookmarkLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchLocationData = async () => {
       setIsLoading(true);
@@ -51,6 +74,14 @@ export default function LocationDetails({ params }: { params: Promise<{ id: stri
         } else {
           throw new Error('No details found for this location');
         }
+        // Fetch bookmark status if signed in
+        if (isSignedIn) {
+          const bookmarkRes = await fetch(`/api/bookmarks?locationId=${id}`);
+          if (bookmarkRes.ok) {
+            const bookmarkData = await bookmarkRes.json();
+            setIsBookmarked(!!bookmarkData?.bookmarked);
+          }
+        }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'An error occurred while fetching data';
         setError(errorMessage);
@@ -60,7 +91,7 @@ export default function LocationDetails({ params }: { params: Promise<{ id: stri
       }
     };
     fetchLocationData();
-  }, [id]);
+  }, [id, isSignedIn]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -121,7 +152,26 @@ export default function LocationDetails({ params }: { params: Promise<{ id: stri
                     )}
                   </div>
                 </div>
-                {/* Bookmark/share logic can be added here as needed */}
+                {/* Bookmark/share logic */}
+                <Button
+                  onClick={handleBookmark}
+                  disabled={bookmarkLoading}
+                  variant={isBookmarked ? 'secondary' : 'outline'}
+                  className="ml-auto flex items-center gap-2"
+                  aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
+                >
+                  {bookmarkLoading ? (
+                    'Loading...'
+                  ) : isBookmarked ? (
+                    <>
+                      <BookmarkCheck className="h-5 w-5 text-primary" /> Bookmarked
+                    </>
+                  ) : (
+                    <>
+                      <Bookmark className="h-5 w-5" /> Bookmark
+                    </>
+                  )}
+                </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                 <div>
