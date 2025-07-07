@@ -94,14 +94,17 @@ export default function InterestsPage() {
   useEffect(() => {
     const fetchExistingInterests = async () => {
       if (!user?.id) return;
-
       setIsFetching(true);
       try {
         const response = await fetch("/api/user/interests");
         if (response.ok) {
           const data = await response.json();
           if (data.interests && data.interests.length > 0) {
-            setSelectedInterests(data.interests);
+            // Normalize interests from DB to match lowercase id format
+            const normalized = data.interests.map((name: string) =>
+              name.trim().toLowerCase()
+            );
+            setSelectedInterests(normalized);
             setHasExistingInterests(true);
           }
         }
@@ -111,7 +114,6 @@ export default function InterestsPage() {
         setIsFetching(false);
       }
     };
-
     if (isLoaded && user) {
       fetchExistingInterests();
     }
