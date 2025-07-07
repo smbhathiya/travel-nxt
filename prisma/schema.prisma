@@ -23,7 +23,8 @@ model User {
   interests   String[]   
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  bookmarks   Bookmark[] 
+  bookmarks   Bookmark[]
+  feedbacks   Feedback[]
 
   @@map("users")
 }
@@ -42,4 +43,32 @@ model Bookmark {
   
   @@unique([userId, locationName, locatedCity])
   @@map("bookmarks")
+}
+
+model Location {
+  id            String   @id @default(cuid())
+  name          String
+  type          String
+  locatedCity   String
+  about         String
+  overallRating Float   @default(0)
+  unsplashImage String
+  feedbacks     Feedback[]
+
+  @@map("locations")
+}
+
+model Feedback {
+  id         String   @id @default(cuid())
+  comment    String
+  sentiment  String   
+  rating     Float
+  createdAt  DateTime @default(now())
+  userId     String
+  locationId String
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@map("feedbacks")
 }
