@@ -2,11 +2,7 @@
 
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -109,7 +105,7 @@ export function LocationSearchPopover({
               </Button>
             </PopoverTrigger>
           </div>
-          <Button type="submit">
+          <Button type="submit" className="h-11 px-4">
             <Search className="h-4 w-4 mr-2" />
             Search
           </Button>
