@@ -116,12 +116,15 @@ export function FeedbackSection({ locationId, userId }: FeedbackSectionProps) {
           {submitting ? "Submitting..." : "Submit Feedback"}
         </Button>
       </form>
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Feedback Summary</h3>
-        <div className="flex gap-4">
-          <span className="text-green-600">Positive: {sentimentStats.positive}%</span>
-          <span className="text-red-600">Negative: {sentimentStats.negative}%</span>
-        </div>
+      {/* Feedback summary message as a colored card */}
+      <div className={`mb-6 rounded-lg p-4 text-white font-semibold text-base ${feedbacks.length === 0 ? 'bg-muted-foreground' : sentimentStats.positive >= sentimentStats.negative ? 'bg-green-600' : 'bg-red-600'}`}>
+        {feedbacks.length > 0 ? (
+          <span>
+            {feedbacks.length} users commented, {sentimentStats.positive}% positive comments for this place
+          </span>
+        ) : (
+          <span>No comments yet.</span>
+        )}
       </div>
       <div>
         <h3 className="text-lg font-semibold mb-2">All Comments</h3>
@@ -133,9 +136,7 @@ export function FeedbackSection({ locationId, userId }: FeedbackSectionProps) {
               <Card key={fb.id} className="border">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={fb.sentiment === "Positive" ? "text-green-600" : "text-red-600"}>
-                      {fb.sentiment}
-                    </span>
+                    {/* Removed sentiment label here */}
                     {typeof fb.rating === 'number' && (
                       <span className="flex items-center gap-1 ml-2">
                         <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
