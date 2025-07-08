@@ -99,9 +99,9 @@ export default function LocationDetails({ params }: { params: Promise<{ id: stri
       <div className="flex-1">
         <div className="container max-w-6xl mx-auto px-4 py-12">
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={() => router.back()}
-            className="mb-6 flex items-center gap-2"
+            className="mb-6 flex items-center gap-2 text-primary hover:text-primary/80"
           >
             <ArrowLeft className="h-4 w-4" />
             Go back
