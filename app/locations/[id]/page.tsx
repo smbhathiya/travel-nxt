@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/components/ui/use-toast";
 import Image from "next/image";
+import { FeedbackSection } from "./FeedbackSection";
 
 interface LocationData {
   id: string;
@@ -29,7 +30,7 @@ export default function LocationDetails({ params }: { params: Promise<{ id: stri
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { isSignedIn } = useUser();
+  const { isSignedIn, user } = useUser();
   const { toast } = useToast();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
@@ -214,6 +215,7 @@ export default function LocationDetails({ params }: { params: Promise<{ id: stri
                 </div>
               </div>
               {/* Feedbacks and other sections can be added here */}
+              <FeedbackSection locationId={id} userId={user?.id} />
             </>
           ) : null}
         </div>
