@@ -2,45 +2,63 @@
 
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check, MapPin, Search, X } from "lucide-react";
-import { availableLocations } from "@/lib/location-data";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+
+interface Location {
+  id: string;
+  name: string;
+}
 
 interface LocationSearchPopoverProps {
   className?: string;
 }
 
-export function LocationSearchPopover({ className }: LocationSearchPopoverProps) {
+export function LocationSearchPopover({
+  className,
+}: LocationSearchPopoverProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
+  const [filteredLocations, setFilteredLocations] = useState<Location[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   useEffect(() => {
-    // Filter locations synchronously without creating promises
+    const fetchLocations = async () => {
+      try {
+        const res = await fetch(
+          `/api/locations/search?q=${encodeURIComponent(searchQuery)}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setFilteredLocations(data);
+        } else {
+          setFilteredLocations([]);
+        }
+      } catch {
+        setFilteredLocations([]);
+      }
+    };
     if (searchQuery.length > 0) {
-      const filtered = availableLocations.filter(location => 
-        location.toLowerCase().includes(searchQuery.toLowerCase())
-      ).slice(0, 20); // Limit to 20 results for better performance
-      setFilteredLocations(filtered);
+      fetchLocations();
     } else {
-      // Show a few example locations when no search is entered
-      setFilteredLocations(availableLocations.slice(0, 10));
+      setFilteredLocations([]);
     }
   }, [searchQuery]);
 
-  const handleLocationSelect = (location: string) => {
-    setSearchQuery(location);
+  const handleLocationSelect = (location: Location) => {
+    setSearchQuery(location.name);
     setOpen(false);
-    // Use replace instead of push to avoid adding to history stack
-    // This can sometimes help with navigation-related suspense issues
-    router.replace(`/locations/${encodeURIComponent(location)}`);
+    router.replace(`/locations/${location.id}`);
   };
 
   const handleClear = () => {
@@ -50,14 +68,10 @@ export function LocationSearchPopover({ className }: LocationSearchPopoverProps)
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Only navigate if we have a valid location from our predefined list
-    if (searchQuery && availableLocations.includes(searchQuery)) {
-      // Close popover first to avoid state updates after navigation
+    if (searchQuery && filteredLocations.length > 0) {
       setOpen(false);
-      // Use a setTimeout to delay navigation slightly, allowing React to finish any pending state updates
       setTimeout(() => {
-        router.replace(`/locations/${encodeURIComponent(searchQuery)}`);
+        router.replace(`/locations/${filteredLocations[0].id}`);
       }, 0);
     }
   };
@@ -77,8 +91,8 @@ export function LocationSearchPopover({ className }: LocationSearchPopoverProps)
         <form onSubmit={handleSearch} className="flex gap-2">
           <div className="relative flex-1">
             <PopoverTrigger asChild>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 role="combobox"
                 className="w-full justify-start text-left font-normal h-11"
               >
@@ -88,7 +102,9 @@ export function LocationSearchPopover({ className }: LocationSearchPopoverProps)
                     {searchQuery}
                   </span>
                 ) : (
-                  <span className="text-muted-foreground">Search for a destination...</span>
+                  <span className="text-muted-foreground">
+                    Search for a destination...
+                  </span>
                 )}
               </Button>
             </PopoverTrigger>
@@ -98,7 +114,10 @@ export function LocationSearchPopover({ className }: LocationSearchPopoverProps)
             Search
           </Button>
         </form>
-        <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]" align="start">
+        <PopoverContent
+          className="p-0 w-[var(--radix-popover-trigger-width)]"
+          align="start"
+        >
           <div className="flex items-center border-b p-3">
             <Search className="h-4 w-4 mr-2 flex-none text-muted-foreground" />
             <Input
@@ -123,18 +142,20 @@ export function LocationSearchPopover({ className }: LocationSearchPopoverProps)
           <ScrollArea className="h-72">
             {filteredLocations.length > 0 ? (
               <div className="py-2">
-                {filteredLocations.map((location, index) => (
+                {filteredLocations.map((location) => (
                   <div
-                    key={index}
+                    key={location.id}
                     className={cn(
                       "flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-muted transition-colors",
-                      searchQuery === location && "bg-muted"
+                      searchQuery === location.name && "bg-muted"
                     )}
                     onClick={() => handleLocationSelect(location)}
                   >
                     <MapPin className="h-4 w-4 flex-none" />
-                    <span className="flex-grow">{location}</span>
-                    {searchQuery === location && <Check className="h-4 w-4 text-primary" />}
+                    <span className="flex-grow">{location.name}</span>
+                    {searchQuery === location.name && (
+                      <Check className="h-4 w-4 text-primary" />
+                    )}
                   </div>
                 ))}
               </div>
