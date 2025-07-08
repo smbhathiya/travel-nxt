@@ -6,14 +6,15 @@ import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 import { Navbar } from "../../components/landing/Navbar";
 import { Footer } from "../../components/landing/Footer";
-import { locationCategories } from "../../lib/location-data";
-import { CategoryGrid } from "@/components/locations/CategoryGrid";
 import { LocationSearchPopover } from "@/components/locations/LocationSearchPopover";
 import { useRouter, useSearchParams } from "next/navigation";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import CategoryGrid from "@/components/locations/CategoryGrid";
 
 export default function LocationSearch() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [categoryLocations, setCategoryLocations] = useState<{ id: string; name: string }[]>([]);
+  const [categoryLoading, setCategoryLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -23,6 +24,23 @@ export default function LocationSearch() {
       setSelectedCategory(categoryParam);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (selectedCategory) {
+      setCategoryLoading(true);
+      fetch(
+        `/api/locations/by-category?category=${encodeURIComponent(
+          selectedCategory
+        )}`
+      )
+        .then((res) => res.json())
+        .then((data) => setCategoryLocations(data))
+        .catch(() => setCategoryLocations([]))
+        .finally(() => setCategoryLoading(false));
+    } else {
+      setCategoryLocations([]);
+    }
+  }, [selectedCategory]);
 
   const handleLocationSelect = (location: string) => {
     router.push(`/locations/${encodeURIComponent(location)}`);
@@ -77,22 +95,30 @@ export default function LocationSearch() {
                 </Button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {locationCategories
-                  .find((category) => category.type === selectedCategory)
-                  ?.locations.map((location, index) => (
+                {categoryLoading ? (
+                  <div className="col-span-full text-center py-8 text-muted-foreground">
+                    Loading...
+                  </div>
+                ) : categoryLocations.length > 0 ? (
+                  categoryLocations.map((location) => (
                     <Card
-                      key={index}
+                      key={location.id}
                       className="overflow-hidden cursor-pointer hover:shadow-lg transition-all"
-                      onClick={() => handleLocationSelect(location)}
+                      onClick={() => handleLocationSelect(location.name)}
                     >
                       <CardContent className="p-4">
                         <div className="flex items-center gap-2">
                           <MapPin className="h-5 w-5 text-primary" />
-                          <h3 className="font-medium">{location}</h3>
+                          <h3 className="font-medium">{location.name}</h3>
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-8 text-muted-foreground">
+                    No locations found for this category.
+                  </div>
+                )}
               </div>
             </div>
           ) : (
