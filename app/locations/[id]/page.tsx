@@ -104,7 +104,7 @@ export default function LocationDetails({ params }: { params: Promise<{ id: stri
             className="mb-6 flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to results
+            Go back
           </Button>
           {isLoading ? (
             <div className="space-y-8">
