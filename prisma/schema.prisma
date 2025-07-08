@@ -62,7 +62,8 @@ model Feedback {
   id         String   @id @default(cuid())
   comment    String
   sentiment  String   
-  rating     Float
+  confidence Float    
+  rating     Float?   
   createdAt  DateTime @default(now())
   userId     String
   locationId String
