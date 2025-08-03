@@ -25,11 +25,18 @@ import {
   RefreshCw,
   Brain,
   Sparkles,
+  Zap,
+  ArrowRight,
+  Heart,
+  TrendingUp,
+  Users,
+  Globe,
 } from "lucide-react";
 import { Navbar } from "../../components/landing/Navbar";
 import { Footer } from "../../components/landing/Footer";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { 
   getPersonalizedRecommendations, 
   type PersonalizedRecommendation,
@@ -53,6 +60,53 @@ export default function FindDestinationsPage() {
   const [interestsLoading, setInterestsLoading] = useState(true);
   const [recommendationsFetched, setRecommendationsFetched] = useState(false);
   const [usingPredictedInterests, setUsingPredictedInterests] = useState(false);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.8,
+        staggerChildren: 0.15,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 40, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.7,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
+  const floatingVariants = {
+    animate: {
+      y: [-10, 10, -10],
+      transition: {
+        duration: 4,
+        repeat: Infinity,
+        ease: "easeInOut" as const,
+      },
+    },
+  };
 
   const fetchUserInterests = useCallback(async () => {
     if (!user) return;
@@ -78,7 +132,6 @@ export default function FindDestinationsPage() {
 
     setIsLoading(true);
     try {
-      // Get personalized recommendations (combines user interests + AI predictions)
       console.log('🧠 [Discover] Getting combined recommendations...');
       const personalizedData = await getPersonalizedRecommendations();
       console.log('✅ [Discover] Combined recommendations successful:', {
@@ -96,7 +149,6 @@ export default function FindDestinationsPage() {
     }
   }, [hasInterests, isLoading, recommendationsFetched]);
 
-  // Fetch user bookmarks
   const fetchBookmarks = useCallback(async () => {
     if (!user) return;
 
@@ -121,14 +173,12 @@ export default function FindDestinationsPage() {
     fetchUserInterests();
   }, [fetchUserInterests]);
 
-  // Auto-fetch recommendations when user has interests and is not loading
   useEffect(() => {
     if (hasInterests && userInterests.length > 0) {
       fetchRecommendations();
     }
   }, [hasInterests, userInterests, fetchRecommendations]);
 
-  // Fetch user bookmarks
   useEffect(() => {
     if (user) {
       fetchBookmarks();
@@ -141,17 +191,13 @@ export default function FindDestinationsPage() {
     const locationKey = `${rec.Location_Name}-${rec.Located_City}`;
     const isBookmarked = bookmarkedLocations.has(locationKey);
 
-    // Add to loading set
     setBookmarkLoading((prev) => new Set(prev).add(locationKey));
 
     try {
       if (isBookmarked) {
-        // Remove bookmark
         const response = await fetch("/api/bookmarks", {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             locationName: rec.Location_Name,
             locatedCity: rec.Located_City,
@@ -166,12 +212,9 @@ export default function FindDestinationsPage() {
           });
         }
       } else {
-        // Add bookmark
         const response = await fetch("/api/bookmarks", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             locationName: rec.Location_Name,
             locatedCity: rec.Located_City,
@@ -184,14 +227,12 @@ export default function FindDestinationsPage() {
         if (response.ok) {
           setBookmarkedLocations((prev) => new Set(prev).add(locationKey));
         } else if (response.status === 409) {
-          // Already bookmarked
           setBookmarkedLocations((prev) => new Set(prev).add(locationKey));
         }
       }
     } catch (error) {
       console.error("Error handling bookmark:", error);
     } finally {
-      // Remove from loading set
       setBookmarkLoading((prev) => {
         const newSet = new Set(prev);
         newSet.delete(locationKey);
@@ -200,14 +241,12 @@ export default function FindDestinationsPage() {
     }
   };
 
-  // Manual refresh function that resets cache
   const handleManualRefresh = useCallback(() => {
     setRecommendationsFetched(false);
     setUsingPredictedInterests(false);
     fetchRecommendations();
   }, [fetchRecommendations]);
 
-  // Function to get icon based on location type
   const getLocationIcon = (locationType: string) => {
     const iconClass = "h-5 w-5";
     switch (locationType.toLowerCase()) {
@@ -239,305 +278,464 @@ export default function FindDestinationsPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
 
-      <div className="flex-1">
-        <div className="container max-w-6xl mx-auto px-4 py-12">
-          <div className="text-center mb-10">
-            <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Discover Travel Locations in Sri Lanka
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get personalized recommendations for amazing destinations in Sri
-              Lanka based on your interests
-            </p>
-          </div>
+      <div className="flex-1 relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 -z-10">
+          <motion.div
+            className="absolute top-20 left-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"
+            variants={floatingVariants}
+            animate="animate"
+          />
+          <motion.div
+            className="absolute top-40 right-20 w-40 h-40 bg-primary/5 rounded-full blur-3xl"
+            variants={floatingVariants}
+            animate="animate"
+            style={{ animationDelay: "2s" }}
+          />
+          <motion.div
+            className="absolute bottom-40 left-20 w-24 h-24 bg-primary/5 rounded-full blur-3xl"
+            variants={floatingVariants}
+            animate="animate"
+            style={{ animationDelay: "4s" }}
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
+        </div>
+
+        <motion.div 
+          className="container max-w-7xl mx-auto px-4 py-16"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Hero Section */}
+          <motion.div 
+            className="text-center mb-16"
+            variants={itemVariants}
+          >
+
+
+            <motion.h1 
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-8 text-foreground"
+              variants={itemVariants}
+            >
+              Discover{" "}
+              <span className="text-primary">
+                Sri Lanka
+              </span>
+            </motion.h1>
+            
+            <motion.p 
+              className="text-xl sm:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed mb-12"
+              variants={itemVariants}
+            >
+              Experience the magic of personalized travel recommendations powered by AI
+            </motion.p>
+
+
+          </motion.div>
 
           {interestsLoading ? (
-            <Card className="max-w-md mx-auto">
-              <CardContent className="p-6 text-center">
-                <Skeleton className="h-4 w-3/4 mx-auto mb-4" />
-                <Skeleton className="h-10 w-32 mx-auto" />
-              </CardContent>
-            </Card>
+            <motion.div variants={itemVariants} className="flex justify-center">
+              <Card className="max-w-lg bg-card border border-border">
+                <CardContent className="p-12 text-center">
+                  <motion.div
+                    className="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-3xl mb-8"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Brain className="h-10 w-10 text-primary" />
+                  </motion.div>
+                  <Skeleton className="h-6 w-48 mx-auto mb-4" />
+                  <Skeleton className="h-12 w-32 mx-auto" />
+                </CardContent>
+              </Card>
+            </motion.div>
           ) : !hasInterests ? (
-            <Card className="max-w-md mx-auto">
-              <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground mb-4">
-                  To get personalized recommendations, please set your travel
-                  interests first.
-                </p>
-                <Button asChild>
-                  <a href="/interests">Set Your Interests</a>
-                </Button>
-              </CardContent>
-            </Card>
+            <motion.div variants={itemVariants} className="flex justify-center">
+              <Card className="max-w-lg bg-card border border-border">
+                <CardContent className="p-12 text-center">
+                  <motion.div
+                    className="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-3xl mb-8"
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                  >
+                    <Heart className="h-10 w-10 text-primary" />
+                  </motion.div>
+                  <h3 className="text-2xl font-bold mb-4 text-foreground">
+                    Start Your Journey
+                  </h3>
+                  <p className="text-muted-foreground mb-8 leading-relaxed">
+                    Tell us about your travel preferences and let our AI discover the perfect destinations for you
+                  </p>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button 
+                      className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-primary/25 transition-all duration-300 rounded-full px-10 py-4 text-lg font-semibold"
+                      size="lg"
+                      asChild
+                    >
+                      <a href="/interests">
+                        Set Your Interests
+                        <ArrowRight className="ml-3 h-5 w-5" />
+                      </a>
+                    </Button>
+                  </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
           ) : (
-            <div className="space-y-6">
-              <div className="text-center bg-muted/30 rounded-xl p-6 border border-muted">
-                {interestsLoading ? (
-                  <div className="flex items-center justify-center gap-3 mb-4">
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="h-4 w-24" />
-                      <div className="flex flex-wrap gap-1">
-                        <Skeleton className="h-6 w-16 rounded-full" />
-                        <Skeleton className="h-6 w-20 rounded-full" />
-                        <Skeleton className="h-6 w-14 rounded-full" />
-                      </div>
+            <motion.div 
+              className="space-y-12"
+              variants={containerVariants}
+            >
+              {/* Interests & AI Section */}
+              <motion.div 
+                className="bg-card backdrop-blur-xl rounded-3xl p-8 border border-border"
+                variants={itemVariants}
+              >
+                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-6">
+                                             <motion.div
+                         className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-2xl"
+                         whileHover={{ scale: 1.1, rotate: 5 }}
+                       >
+                         <Brain className="h-6 w-6 text-primary" />
+                       </motion.div>
+                       <div>
+                         <h3 className="text-xl font-bold text-foreground">
+                           {usingPredictedInterests ? "Your Interests & AI Predictions" : "Your Travel Interests"}
+                         </h3>
+                         <p className="text-muted-foreground text-sm">
+                           {usingPredictedInterests 
+                             ? "Combined with AI-powered insights for better recommendations"
+                             : "Personalized just for you"
+                           }
+                         </p>
+                       </div>
                     </div>
-                    <Skeleton className="h-8 w-24" />
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center gap-3 mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-muted-foreground">
-                        {usingPredictedInterests ? (
-                          <div className="flex items-center gap-2">
-                            <Brain className="h-4 w-4 text-purple-500" />
-                            <span>Your Interests & AI Predictions:</span>
-                          </div>
-                        ) : (
-                          "Your interests:"
-                        )}
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        {/* User Interests */}
-                        {userInterests.length > 0 && (
-                          <>
-                            <span className="text-xs font-medium text-muted-foreground mr-1">Your:</span>
-                            {userInterests.slice(0, 2).map((interest, idx) => (
-                              <span
-                                key={`user-${idx}`}
-                                className="inline-block bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full"
-                              >
-                                {interest}
-                              </span>
-                            ))}
-                            {userInterests.length > 2 && (
-                              <span className="inline-block bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
-                                +{userInterests.length - 2}
-                              </span>
-                            )}
-                          </>
-                        )}
 
-                        {/* AI Predicted Interests */}
-                        {usingPredictedInterests && predictedInterests.length > 0 && (
-                          <>
-                            <span className="text-xs font-medium text-muted-foreground mr-1 ml-2">AI:</span>
-                            {predictedInterests.slice(0, 2).map((interest, idx) => (
-                              <span
-                                key={`ai-${idx}`}
-                                className="inline-block bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"
-                              >
-                                <Sparkles className="h-3 w-3" />
-                                {interest.location_type}
-                                <span className="text-xs opacity-75">
-                                  ({Math.round(interest.confidence * 100)}%)
-                                </span>
-                              </span>
-                            ))}
-                            {predictedInterests.length > 2 && (
-                              <span className="inline-block bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 text-xs font-medium px-2 py-1 rounded-full">
-                                +{predictedInterests.length - 2}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => router.push("/interests")}
-                        className="text-xs h-auto py-1 px-3 border border-primary/20 hover:border-primary"
-                      >
-                        Edit Interests
-                      </Button>
-                      
-                      {!interestsLoading && (
-                        <Button
-                          onClick={handleManualRefresh}
-                          disabled={isLoading}
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-full"
-                          title="Refresh recommendations"
-                        >
-                          {isLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                          ) : (
-                            <RefreshCw className="h-4 w-4" />
-                          )}
-                        </Button>
+                    <div className="flex flex-wrap gap-3">
+                      {/* User Interests */}
+                      {userInterests.length > 0 && (
+                                                 <div className="flex items-center gap-2">
+                           <span className="text-sm font-medium text-muted-foreground">Your:</span>
+                           {userInterests.slice(0, 3).map((interest, idx) => (
+                             <motion.span
+                               key={`user-${idx}`}
+                               className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full border border-primary/20"
+                               initial={{ opacity: 0, scale: 0.8 }}
+                               animate={{ opacity: 1, scale: 1 }}
+                               transition={{ delay: idx * 0.1 }}
+                               whileHover={{ scale: 1.05, y: -2 }}
+                             >
+                               {getLocationIcon(interest)}
+                               {interest}
+                             </motion.span>
+                           ))}
+                           {userInterests.length > 3 && (
+                             <motion.span 
+                               className="inline-flex items-center px-3 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full border border-primary/20"
+                               initial={{ opacity: 0, scale: 0.8 }}
+                               animate={{ opacity: 1, scale: 1 }}
+                               transition={{ delay: 0.3 }}
+                             >
+                               +{userInterests.length - 3}
+                             </motion.span>
+                           )}
+                         </div>
+                      )}
+
+                      {/* AI Predicted Interests */}
+                      {usingPredictedInterests && predictedInterests.length > 0 && (
+                                                 <div className="flex items-center gap-2">
+                           <span className="text-sm font-medium text-muted-foreground">AI:</span>
+                           {predictedInterests.slice(0, 3).map((interest, idx) => (
+                             <motion.span
+                               key={`ai-${idx}`}
+                               className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/20 text-purple-700 dark:text-purple-300 text-sm font-medium rounded-full border border-purple-500/30"
+                               initial={{ opacity: 0, scale: 0.8 }}
+                               animate={{ opacity: 1, scale: 1 }}
+                               transition={{ delay: 0.4 + idx * 0.1 }}
+                               whileHover={{ scale: 1.05, y: -2 }}
+                             >
+                               <Sparkles className="h-4 w-4" />
+                               {interest.location_type}
+                               <span className="text-xs opacity-75">
+                                 {Math.round(interest.confidence * 100)}%
+                               </span>
+                             </motion.span>
+                           ))}
+                           {predictedInterests.length > 3 && (
+                             <motion.span 
+                               className="inline-flex items-center px-3 py-2 bg-purple-500/20 text-purple-700 dark:text-purple-300 text-sm font-medium rounded-full border border-purple-500/30"
+                               initial={{ opacity: 0, scale: 0.8 }}
+                               animate={{ opacity: 1, scale: 1 }}
+                               transition={{ delay: 0.7 }}
+                             >
+                               +{predictedInterests.length - 3}
+                             </motion.span>
+                           )}
+                         </div>
                       )}
                     </div>
                   </div>
-                )}
+                  
+                  <div className="flex items-center gap-3">
+                                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => router.push("/interests")}
+                         className="border-border hover:border-border/60 rounded-full px-6 py-2"
+                       >
+                         Edit Interests
+                       </Button>
+                     </motion.div>
+                     
+                     {!interestsLoading && (
+                       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                         <Button
+                           onClick={handleManualRefresh}
+                           disabled={isLoading}
+                           variant="outline"
+                           size="icon"
+                           className="h-12 w-12 rounded-full border-border hover:border-border/60"
+                           title="Refresh recommendations"
+                         >
+                           {isLoading ? (
+                             <Loader2 className="h-5 w-5 animate-spin" />
+                           ) : (
+                             <RefreshCw className="h-5 w-5" />
+                           )}
+                         </Button>
+                       </motion.div>
+                     )}
+                  </div>
+                </div>
 
                 {!interestsLoading && isLoading && recommendations.length === 0 && (
-                  <div className="flex items-center justify-center gap-2 py-4">
-                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                    <span className="text-muted-foreground">
-                      {usingPredictedInterests 
-                        ? "Getting your combined recommendations (interests + AI predictions)..."
-                        : "Getting your personalized recommendations..."
-                      }
-                    </span>
-                  </div>
+                                     <motion.div 
+                     className="flex items-center justify-center gap-4 py-8 mt-6"
+                     initial={{ opacity: 0 }}
+                     animate={{ opacity: 1 }}
+                   >
+                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                     <span className="text-muted-foreground text-lg">
+                       {usingPredictedInterests 
+                         ? "Analyzing your interests and AI predictions..."
+                         : "Finding your perfect destinations..."
+                       }
+                     </span>
+                   </motion.div>
                 )}
 
-                {usingPredictedInterests && predictedInterests.length > 0 && (
-                  <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Brain className="h-4 w-4 text-purple-600" />
-                      <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                        AI-Powered Recommendations
-                      </span>
-                    </div>
-                    <p className="text-xs text-purple-600 dark:text-purple-400">
-                      Based on your profile and preferences, our AI has predicted these location types would interest you most.
-                    </p>
-                  </div>
-                )}
-              </div>
+                                 {usingPredictedInterests && predictedInterests.length > 0 && (
+                   <motion.div 
+                     className="mt-6 p-6 bg-purple-500/10 rounded-2xl border border-purple-500/20"
+                     initial={{ opacity: 0, y: 20 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     transition={{ delay: 0.5 }}
+                   >
+                     <div className="flex items-center gap-3 mb-3">
+                       <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                       <span className="text-lg font-semibold text-purple-700 dark:text-purple-300">
+                         AI-Powered Insights
+                       </span>
+                     </div>
+                     <p className="text-muted-foreground">
+                       Our AI has analyzed your profile and discovered new interests that might surprise you!
+                     </p>
+                   </motion.div>
+                 )}
+              </motion.div>
 
+              {/* Recommendations Grid */}
               {recommendations.length > 0 && (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {recommendations.map((rec, index) => (
-                    <Card
-                      key={index}
-                      className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:bg-accent/50"
-                    >
-                      <CardContent className="p-6">
-                        {/* Header with location name and ratings */}
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <h3 className="font-bold text-xl leading-tight mb-2 text-foreground">
-                              {rec.Location_Name}
-                            </h3>
-                            <div className="flex items-center gap-2 mb-3">
-                              {getLocationIcon(rec.Location_Type)}
-                              <span className="text-base font-medium text-muted-foreground">
-                                {rec.Located_City}
-                              </span>
+                <motion.div 
+                  className="space-y-8"
+                  variants={containerVariants}
+                >
+                                     <motion.div 
+                     className="text-center"
+                     variants={itemVariants}
+                   >
+                     <h2 className="text-3xl font-bold text-foreground mb-4">
+                       Your Perfect Destinations
+                     </h2>
+                     <p className="text-muted-foreground max-w-2xl mx-auto">
+                       Discover amazing places in Sri Lanka that match your interests and travel style
+                     </p>
+                   </motion.div>
+
+                  <motion.div 
+                    className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
+                    variants={containerVariants}
+                  >
+                    {recommendations.map((rec, index) => (
+                      <motion.div
+                        key={index}
+                        variants={cardVariants}
+                        whileHover={{ 
+                          scale: 1.03, 
+                          y: -8,
+                          transition: { duration: 0.3, ease: "easeOut" as const }
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                                                 <Card className="overflow-hidden bg-card backdrop-blur-xl border border-border hover:border-border/60 transition-all duration-300 h-full group">
+                           <CardContent className="p-0">
+                             {/* Card Header with Image Placeholder */}
+                             <div className="relative h-48 bg-primary/10 overflow-hidden">
+                               <motion.div
+                                 className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                 whileHover={{ scale: 1.1 }}
+                               />
+                              <div className="absolute top-4 right-4">
+                                <motion.div 
+                                  className="flex items-center gap-1 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full"
+                                  whileHover={{ scale: 1.05 }}
+                                >
+                                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                  <span className="text-sm font-bold text-white">
+                                    {rec.Rating.toFixed(1)}
+                                  </span>
+                                </motion.div>
+                              </div>
+                                                             <div className="absolute bottom-4 left-4">
+                                 <motion.div
+                                   className="inline-flex items-center justify-center w-12 h-12 bg-background/80 backdrop-blur-sm rounded-2xl"
+                                   whileHover={{ scale: 1.1, rotate: 5 }}
+                                 >
+                                   {getLocationIcon(rec.Location_Type)}
+                                 </motion.div>
+                               </div>
                             </div>
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            {/* Rating */}
-                            <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-full">
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              <span className="text-sm font-semibold">
-                                {rec.Rating.toFixed(1)}
-                              </span>
+
+                            <div className="p-6">
+                              {/* Location Info */}
+                                                             <div className="mb-4">
+                                 <h3 className="font-bold text-xl mb-2 text-foreground group-hover:text-primary transition-colors">
+                                   {rec.Location_Name}
+                                 </h3>
+                                 <div className="flex items-center gap-2 text-muted-foreground mb-3">
+                                   <MapPin className="h-4 w-4" />
+                                   <span className="text-sm">{rec.Located_City}</span>
+                                 </div>
+                               </div>
+
+                              {/* Tags */}
+                              <div className="flex flex-wrap gap-2 mb-4">
+                                <motion.span 
+                                  className="inline-block bg-secondary/20 text-secondary-foreground text-xs font-medium px-3 py-1 rounded-full capitalize"
+                                  whileHover={{ scale: 1.05 }}
+                                >
+                                  {rec.Location_Type}
+                                </motion.span>
+                                {rec.reviewCount > 0 && (
+                                  <motion.span 
+                                    className="inline-block bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-medium px-3 py-1 rounded-full"
+                                    whileHover={{ scale: 1.05 }}
+                                  >
+                                    {rec.reviewCount} reviews
+                                  </motion.span>
+                                )}
+                              </div>
+                              
+                              {/* Sentiment */}
+                              <div className="mb-6">
+                                                                 <motion.div 
+                                   className={`inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full ${
+                                     rec.Sentiment === "Positive" 
+                                       ? "bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30" 
+                                       : rec.Sentiment === "Negative"
+                                       ? "bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30"
+                                       : "bg-muted text-muted-foreground border border-border"
+                                   }`}
+                                   whileHover={{ scale: 1.02 }}
+                                 >
+                                   <Star className="h-4 w-4 fill-current" />
+                                   <span>{(rec.Sentiment_Score * 100).toFixed(0)}% positive</span>
+                                 </motion.div>
+                              </div>
+
+                              {/* Action Buttons */}
+                              <div className="flex gap-3">
+                                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
+                                  <Button
+                                    variant={
+                                      bookmarkedLocations.has(
+                                        `${rec.Location_Name}-${rec.Located_City}`
+                                      )
+                                        ? "default"
+                                        : "outline"
+                                    }
+                                    size="sm"
+                                                                       className={`w-full ${
+                                     bookmarkedLocations.has(
+                                       `${rec.Location_Name}-${rec.Located_City}`
+                                     )
+                                       ? "bg-primary hover:bg-primary/90"
+                                       : "border-border hover:border-border/60"
+                                   }`}
+                                    onClick={() => handleBookmark(rec)}
+                                    disabled={bookmarkLoading.has(
+                                      `${rec.Location_Name}-${rec.Located_City}`
+                                    )}
+                                  >
+                                    {bookmarkLoading.has(
+                                      `${rec.Location_Name}-${rec.Located_City}`
+                                    ) ? (
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : bookmarkedLocations.has(
+                                        `${rec.Location_Name}-${rec.Located_City}`
+                                      ) ? (
+                                      <BookmarkCheck className="h-4 w-4 mr-2" />
+                                    ) : (
+                                      <Bookmark className="h-4 w-4 mr-2" />
+                                    )}
+                                    {bookmarkedLocations.has(
+                                      `${rec.Location_Name}-${rec.Located_City}`
+                                    )
+                                      ? "Saved"
+                                      : "Save"}
+                                  </Button>
+                                </motion.div>
+
+                                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
+                                                                     <Button
+                                     variant="outline"
+                                     size="sm"
+                                     className="w-full border-border hover:border-border/60"
+                                    onClick={() => {
+                                      const searchQuery = `${rec.Location_Name} ${rec.Located_City} Sri Lanka tourist attractions`;
+                                      const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(
+                                        searchQuery
+                                      )}`;
+                                      window.open(
+                                        googleSearchUrl,
+                                        "_blank",
+                                        "noopener,noreferrer"
+                                      );
+                                    }}
+                                  >
+                                    <ExternalLink className="h-4 w-4 mr-2" />
+                                    Explore
+                                  </Button>
+                                </motion.div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-
-                        {/* Location type and sentiment */}
-                        <div className="mb-4 flex flex-wrap gap-2">
-                          <span className="inline-block bg-secondary/50 text-secondary-foreground text-sm font-medium px-3 py-1 rounded-full capitalize">
-                            {rec.Location_Type}
-                          </span>
-                          {rec.reviewCount > 0 && (
-                            <span className="inline-block bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-xs font-medium px-2 py-1 rounded-full">
-                              {rec.reviewCount} reviews
-                            </span>
-                          )}
-                        </div>
-                        
-                        {/* User sentiment feedback - more descriptive */}
-                        <div className="mb-4">
-                          <div className={`inline-flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-md ${
-                            rec.Sentiment === "Positive" 
-                              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" 
-                              : rec.Sentiment === "Negative"
-                              ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                              : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
-                          }`}>
-                            {rec.Sentiment === "Positive" ? (
-                              <>
-                                <Star className="h-4 w-4 fill-current" />
-                                <span>{(rec.Sentiment_Score * 100).toFixed(0)}% of visitors rated this location positively</span>
-                              </>
-                            ) : (
-                              <>
-                                <Star className="h-4 w-4 fill-current" />
-                                <span>{(rec.Sentiment_Score * 100).toFixed(0)}% of visitors had {rec.Sentiment.toLowerCase()} experiences</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="mt-4 pt-4 border-t border-muted/30">
-                          <div className="flex gap-2">
-                            {/* Bookmark Button */}
-                            <Button
-                              variant={
-                                bookmarkedLocations.has(
-                                  `${rec.Location_Name}-${rec.Located_City}`
-                                )
-                                  ? "default"
-                                  : "outline"
-                              }
-                              size="sm"
-                              className="flex-1"
-                              onClick={() => handleBookmark(rec)}
-                              disabled={bookmarkLoading.has(
-                                `${rec.Location_Name}-${rec.Located_City}`
-                              )}
-                            >
-                              {bookmarkLoading.has(
-                                `${rec.Location_Name}-${rec.Located_City}`
-                              ) ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              ) : bookmarkedLocations.has(
-                                  `${rec.Location_Name}-${rec.Located_City}`
-                                ) ? (
-                                <BookmarkCheck className="h-4 w-4 mr-2" />
-                              ) : (
-                                <Bookmark className="h-4 w-4 mr-2" />
-                              )}
-                              {bookmarkedLocations.has(
-                                `${rec.Location_Name}-${rec.Located_City}`
-                              )
-                                ? "Bookmarked"
-                                : "Bookmark"}
-                            </Button>
-
-                            {/* View More Info Button */}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="flex-1"
-                              onClick={() => {
-                                const searchQuery = `${rec.Location_Name} ${rec.Located_City} Sri Lanka tourist attractions`;
-                                const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(
-                                  searchQuery
-                                )}`;
-                                window.open(
-                                  googleSearchUrl,
-                                  "_blank",
-                                  "noopener,noreferrer"
-                                );
-                              }}
-                            >
-                              <ExternalLink className="h-4 w-4 mr-2" />
-                              More Info
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       </div>
 
       <Footer />
