@@ -1,83 +1,228 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Star } from "lucide-react";
+"use client";
 
-type Testimonial = {
-  text: string;
-  author: string;
-  role: string;
-  initials: string;
-};
+import { Star, Quote, User, MapPin, Heart } from "lucide-react";
+import { motion } from "framer-motion";
+import { useInView } from "framer-motion";
+import { useRef } from "react";
 
 export function Testimonials() {
-  const testimonials: Testimonial[] = [
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 50, scale: 0.9 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
+  const testimonials = [
     {
-      text: "The AI recommendations were spot-on! It suggested a beach destination I'd never considered but matched my interests perfectly. Even predicted great weather for my visit.",
-      author: "Sarah Johnson",
-      role: "Beach Lover",
-      initials: "SJ",
+      name: "Sarah Johnson",
+      location: "New York, USA",
+      rating: 5,
+      text: "TravelNxt completely transformed my Sri Lanka trip! The AI recommendations were spot-on and led me to hidden gems I never would have found on my own.",
+      avatar: "SJ",
+      gradient: "from-blue-500 to-cyan-500",
+      destination: "Sigiriya & Kandy",
     },
     {
-      text: "As a hiking enthusiast, I was amazed how the app considered my previous mountain trips and suggested new trails that matched my experience level. The weather forecast feature was invaluable.",
-      author: "Michael Torres",
-      role: "Hiking Enthusiast",
-      initials: "MT",
+      name: "David Chen",
+      location: "Singapore",
+      rating: 5,
+      text: "As a solo traveler, I was worried about planning my trip. TravelNxt made it so easy with personalized suggestions that matched my interests perfectly.",
+      avatar: "DC",
+      gradient: "from-green-500 to-emerald-500",
+      destination: "Galle & Mirissa",
     },
     {
-      text: "I entered my interest in cultural experiences and historical sites, and the AI suggested destinations that perfectly aligned with my tastes. I discovered hidden gems I wouldn't have found otherwise.",
-      author: "Emma Chen",
-      role: "Culture Explorer",
-      initials: "EC",
+      name: "Emma Rodriguez",
+      location: "London, UK",
+      rating: 5,
+      text: "The AI-powered recommendations were incredible! It suggested places that perfectly matched my love for culture and history. My trip was unforgettable!",
+      avatar: "ER",
+      gradient: "from-purple-500 to-violet-500",
+      destination: "Anuradhapura & Polonnaruwa",
+    },
+    {
+      name: "Michael Kim",
+      location: "Seoul, South Korea",
+      rating: 5,
+      text: "TravelNxt helped me discover the most beautiful beaches and wildlife sanctuaries. The personalized approach made my Sri Lanka adventure truly special.",
+      avatar: "MK",
+      gradient: "from-orange-500 to-red-500",
+      destination: "Yala & Bentota",
     },
   ];
 
   return (
-    <section className="py-16 sm:py-20 md:py-24 bg-muted/30 w-full">
-      <div className="container max-w-6xl mx-auto px-4">
-        <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
-            What Our <span className="text-primary">Travelers Say</span>
-          </h2>
-          <p className="mt-4 text-muted-foreground md:text-lg max-w-3xl mx-auto">
-            Hear from travelers who found their perfect destinations with
-            AI-powered recommendations
-          </p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
-          {testimonials.map((testimonial, index) => (
-            <Card
-              key={index}
-              className="bg-card border-none shadow-sm mx-auto w-full max-w-sm sm:max-w-none"
-            >
-              <CardContent className="pt-8 px-6">
-                <div className="flex gap-0.5 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-5 w-5 text-yellow-500 fill-yellow-500"
-                    />
-                  ))}
+    <div className="container max-w-7xl mx-auto px-4 py-20">
+      <motion.div
+        ref={ref}
+        variants={containerVariants}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+        className="text-center mb-20"
+      >
+
+        <motion.h2 
+          className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground"
+          variants={itemVariants}
+        >
+          Real Stories, Real Adventures
+        </motion.h2>
+        
+        <motion.p 
+          className="text-xl sm:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed"
+          variants={itemVariants}
+        >
+          Discover how TravelNxt has helped thousands of travelers create unforgettable experiences in Sri Lanka
+        </motion.p>
+      </motion.div>
+
+      <motion.div 
+        className="grid grid-cols-1 md:grid-cols-2 gap-8"
+        variants={containerVariants}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+      >
+        {testimonials.map((testimonial, idx) => (
+          <motion.div
+            key={idx}
+            variants={cardVariants}
+            whileHover={{ 
+              scale: 1.02, 
+              y: -5,
+              transition: { duration: 0.3, ease: "easeOut" as const }
+            }}
+            whileTap={{ scale: 0.98 }}
+            className="group relative"
+          >
+            <div className="relative bg-white/5 backdrop-blur-sm p-8 h-full border border-white/10 hover:border-white/20 transition-all duration-300 rounded-2xl overflow-hidden">
+              {/* Gradient background on hover */}
+              <motion.div 
+                className={`absolute inset-0 bg-gradient-to-br ${testimonial.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 0.05 }}
+              />
+              
+              {/* Quote Icon */}
+              <motion.div 
+                className="absolute top-6 right-6 text-muted-foreground/30"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
+                transition={{ 
+                  delay: 0.5 + idx * 0.1,
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 10
+                }}
+              >
+                <Quote className="h-8 w-8" />
+              </motion.div>
+              
+              {/* Rating */}
+              <div className="flex items-center gap-1 mb-6">
+                {Array.from({ length: testimonial.rating }).map((_, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
+                    transition={{ 
+                      delay: 0.6 + idx * 0.1 + i * 0.1,
+                      type: "spring",
+                      stiffness: 200,
+                      damping: 10
+                    }}
+                  >
+                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                  </motion.div>
+                ))}
+              </div>
+              
+              {/* Testimonial Text */}
+              <motion.p 
+                className="text-muted-foreground leading-relaxed mb-6 text-lg"
+                variants={itemVariants}
+              >
+                "{testimonial.text}"
+              </motion.p>
+
+              {/* Destination */}
+              <motion.div
+                className="flex items-center gap-2 mb-6 text-sm text-primary/80"
+                initial={{ opacity: 0, x: -20 }}
+                animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                transition={{ 
+                  delay: 0.7 + idx * 0.1,
+                  duration: 0.5,
+                  ease: "easeOut" as const
+                }}
+              >
+                <MapPin className="h-4 w-4" />
+                <span className="font-medium">Visited: {testimonial.destination}</span>
+              </motion.div>
+              
+              {/* Author */}
+              <div className="flex items-center gap-4">
+                <motion.div 
+                  className={`w-12 h-12 bg-gradient-to-br ${testimonial.gradient} text-white rounded-full flex items-center justify-center font-semibold`}
+                  whileHover={{ 
+                    scale: 1.1,
+                    rotate: 5,
+                    transition: { duration: 0.3, ease: "easeOut" as const }
+                  }}
+                >
+                  {testimonial.avatar}
+                </motion.div>
+                <div>
+                  <div className="font-semibold text-foreground">{testimonial.name}</div>
+                  <div className="text-sm text-muted-foreground">{testimonial.location}</div>
                 </div>
-                <p className="italic text-muted-foreground">
-                  &quot;{testimonial.text}&quot;
-                </p>
-                <div className="mt-6 flex items-center">
-                  <div className="h-10 w-10  bg-primary/20 flex items-center justify-center">
-                    <span className="font-medium text-primary">
-                      {testimonial.initials}
-                    </span>
-                  </div>
-                  <div className="ml-4">
-                    <p className="font-medium">{testimonial.author}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {testimonial.role}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    </section>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* Stats */}
+      <motion.div
+        className="mt-20 text-center"
+        variants={itemVariants}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+      >
+
+      </motion.div>
+    </div>
   );
 }

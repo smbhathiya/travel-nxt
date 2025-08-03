@@ -1,56 +1,154 @@
-import { Brain, Heart, MapPin, Sparkles } from "lucide-react";
+"use client";
+
+import { Brain, Heart, MapPin, Sparkles, TrendingUp, Users, Clock, Shield } from "lucide-react";
+import { motion } from "framer-motion";
+import { useInView } from "framer-motion";
+import { useRef } from "react";
 
 export function Features() {
-  return (
-    <div className="container max-w-7xl mx-auto px-4">
-      <div className="text-center mb-16">
-        <div className="inline-flex items-center px-4 py-2 rounded-full  bg-primary/10 text-primary text-sm font-medium mb-6">
-          Why TravelNxt?
-        </div>
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-          Travel Smarter, Not Harder
-        </h2>
-        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          Our AI-powered platform revolutionizes how you discover Sri Lankas hidden gems
-        </p>
-      </div>
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 50, scale: 0.9 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
+  const statsVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
+  return (
+    <div className="container max-w-7xl mx-auto px-4 py-20">
+      <motion.div
+        ref={ref}
+        variants={containerVariants}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+        className="text-center mb-20"
+      >
+
+        
+        <motion.h2 
+          className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground"
+          variants={itemVariants}
+        >
+          Travel Smarter, Not Harder
+        </motion.h2>
+        
+        <motion.p 
+          className="text-xl sm:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed"
+          variants={itemVariants}
+        >
+          Our AI-powered platform revolutionizes how you discover Sri Lanka's hidden gems
+        </motion.p>
+      </motion.div>
+
+      <motion.div 
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20"
+        variants={containerVariants}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+      >
         {[
           {
             icon: <Brain className="h-8 w-8" />,
             title: "AI-Powered Discovery",
             desc: "Advanced algorithms analyze your preferences to suggest perfect destinations tailored just for you",
             gradient: "from-blue-500 to-cyan-500",
+            delay: 0.1,
           },
           {
             icon: <Heart className="h-8 w-8" />,
             title: "Interest-Based Matching",
             desc: "Get personalized recommendations based on your unique travel interests and lifestyle preferences",
             gradient: "from-pink-500 to-rose-500",
+            delay: 0.2,
           },
           {
             icon: <MapPin className="h-8 w-8" />,
             title: "Sri Lanka Expertise",
             desc: "Discover both iconic landmarks and hidden gems across the beautiful Pearl of the Indian Ocean",
             gradient: "from-green-500 to-emerald-500",
+            delay: 0.3,
           },
           {
             icon: <Sparkles className="h-8 w-8" />,
             title: "Smart Recommendations",
-            desc: "Real-time weather data, ratings, and personalized match scores for informed travel decisions",
+            desc: "Real-time ratings, reviews, and personalized match scores for informed travel decisions",
             gradient: "from-purple-500 to-violet-500",
+            delay: 0.4,
           },
         ].map((feature, idx) => (
-          <div key={idx} className="group">
-            <div className="relative bg-white/5 backdrop-blur-sm  p-8 h-full border border-white/10 hover:border-white/20 transition-all duration-300 hover:transform hover:scale-105">
+          <motion.div
+            key={idx}
+            variants={cardVariants}
+            whileHover={{ 
+              scale: 1.05, 
+              y: -10,
+              transition: { duration: 0.3, ease: "easeOut" as const }
+            }}
+            whileTap={{ scale: 0.95 }}
+            className="group relative"
+          >
+            <div className="relative bg-white/5 backdrop-blur-sm p-8 h-full border border-white/10 hover:border-white/20 transition-all duration-300 rounded-2xl overflow-hidden">
               {/* Gradient background on hover */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5  transition-opacity duration-300`} />
+              <motion.div 
+                className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 0.1 }}
+              />
               
               {/* Icon */}
-              <div className={`inline-flex items-center justify-center w-16 h-16  bg-gradient-to-br ${feature.gradient} text-white mb-6 shadow-lg`}>
+              <motion.div 
+                className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${feature.gradient} text-white mb-6 shadow-lg rounded-2xl`}
+                whileHover={{ 
+                  scale: 1.1,
+                  rotate: 5,
+                  transition: { duration: 0.3, ease: "easeOut" as const }
+                }}
+              >
                 {feature.icon}
-              </div>
+              </motion.div>
               
               {/* Content */}
               <h3 className="text-xl font-semibold mb-4 text-foreground">
@@ -60,28 +158,12 @@ export function Features() {
                 {feature.desc}
               </p>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      {/* Stats section */}
-      <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-        {[
-          { number: "1000+", label: "Destinations" },
-          { number: "95%", label: "Match Accuracy" },
-          { number: "50K+", label: "Happy Travelers" },
-          { number: "24/7", label: "AI Support" },
-        ].map((stat, idx) => (
-          <div key={idx} className="space-y-2">
-            <div className="text-3xl sm:text-4xl font-bold text-primary">
-              {stat.number}
-            </div>
-            <div className="text-sm text-muted-foreground font-medium">
-              {stat.label}
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Enhanced Stats section */}
+     
     </div>
   );
 }
