@@ -16,16 +16,7 @@ import {
   Fish, 
   Camera 
 } from "lucide-react";
-
-interface TopRatedLocation {
-  Location_Name: string;
-  Located_City: string;
-  Location_Type: string;
-  Rating: number;
-  Sentiment: string;
-  Sentiment_Score: number;
-  final_score: number;
-}
+import { getTopRatedLocations, type TopRatedLocation } from "@/features/find-destinations/actions";
 
 interface TopRatedLocationsProps {
   className?: string;
@@ -40,13 +31,7 @@ export function TopRatedLocations({ className = "" }: TopRatedLocationsProps) {
     const fetchTopRated = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/top-rated');
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch top-rated locations');
-        }
-
-        const data = await response.json();
+        const data = await getTopRatedLocations(6);
         setLocations(data);
       } catch (error) {
         console.error('Error fetching top-rated locations:', error);
@@ -121,7 +106,7 @@ export function TopRatedLocations({ className = "" }: TopRatedLocationsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {locations.map((location, index) => (
             <Card
-              key={index}
+              key={location.id}
               className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:bg-accent/50"
             >
               <CardContent className="p-6">
@@ -129,12 +114,12 @@ export function TopRatedLocations({ className = "" }: TopRatedLocationsProps) {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <h3 className="font-bold text-xl leading-tight mb-2 text-foreground">
-                      {location.Location_Name}
+                      {location.name}
                     </h3>
                     <div className="flex items-center gap-2 mb-3">
-                      {getLocationIcon(location.Location_Type)}
+                      {getLocationIcon(location.type)}
                       <span className="text-base font-medium text-muted-foreground">
-                        {location.Located_City}
+                        {location.locatedCity}
                       </span>
                     </div>
                   </div>
@@ -143,7 +128,7 @@ export function TopRatedLocations({ className = "" }: TopRatedLocationsProps) {
                     <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-full">
                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                       <span className="text-sm font-semibold">
-                        {location.Rating.toFixed(1)}
+                        {location.overallRating.toFixed(1)}
                       </span>
                     </div>
                   </div>
@@ -152,21 +137,23 @@ export function TopRatedLocations({ className = "" }: TopRatedLocationsProps) {
                 {/* Location type */}
                 <div className="mb-2 flex flex-wrap gap-2">
                   <span className="inline-block bg-secondary/50 text-secondary-foreground text-sm font-medium px-3 py-1 rounded-full capitalize">
-                    {location.Location_Type}
+                    {location.type}
                   </span>
                 </div>
                 
-                {/* Sentiment feedback */}
+                {/* About section */}
                 <div className="mb-4">
-                  <div className={`inline-flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-md ${
-                    location.Sentiment === "Positive" 
-                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" 
-                      : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                  }`}>
-                    <Star className="h-4 w-4 fill-current" />
-                    <span>{(location.Sentiment_Score * 100).toFixed(0)}% of visitors rated this location positively</span>
-                  </div>
+                  <p className="text-sm text-muted-foreground line-clamp-3">
+                    {location.about}
+                  </p>
                 </div>
+
+                {/* Feedback count */}
+                {location._count && (
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <span>{location._count.feedbacks} reviews</span>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
