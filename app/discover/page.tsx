@@ -19,9 +19,6 @@ import {
   Building2,
   Fish,
   Camera,
-  Cloud,
-  Droplets,
-  Wind,
   ExternalLink,
   Bookmark,
   BookmarkCheck,
@@ -33,37 +30,18 @@ import { Navbar } from "../../components/landing/Navbar";
 import { Footer } from "../../components/landing/Footer";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { 
   getPersonalizedRecommendations, 
   type PersonalizedRecommendation,
   type PredictedInterest 
 } from "@/features/find-destinations/actions";
 
-interface WeatherForecast {
-  date: string;
-  temp: number;
-  description: string;
-  icon: string;
-  humidity: number;
-  windSpeed: number;
-}
-
-interface LocationWeather {
-  location: string;
-  city: string;
-  forecast: WeatherForecast[];
-  description: string;
-}
-
 export default function FindDestinationsPage() {
   const { user } = useUser();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [isWeatherLoading, setIsWeatherLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<PersonalizedRecommendation[]>([]);
   const [predictedInterests, setPredictedInterests] = useState<PredictedInterest[]>([]);
-  const [weatherData, setWeatherData] = useState<LocationWeather[]>([]);
   const [userInterests, setUserInterests] = useState<string[]>([]);
   const [hasInterests, setHasInterests] = useState(false);
   const [bookmarkedLocations, setBookmarkedLocations] = useState<Set<string>>(
@@ -99,7 +77,6 @@ export default function FindDestinationsPage() {
     if (!hasInterests || isLoading || recommendationsFetched) return;
 
     setIsLoading(true);
-    setIsWeatherLoading(true);
     try {
       // Get personalized recommendations (combines user interests + AI predictions)
       console.log('🧠 [Discover] Getting combined recommendations...');
@@ -112,31 +89,8 @@ export default function FindDestinationsPage() {
       setPredictedInterests(personalizedData.predictedInterests);
       setUsingPredictedInterests(personalizedData.predictedInterests.length > 0);
       setRecommendationsFetched(true);
-
-      // Fetch weather data for the recommended locations
-      if (personalizedData.recommendations.length > 0) {
-        const weatherPromises = personalizedData.recommendations.map(async (location) => {
-          try {
-            const response = await fetch(`/api/weather?city=${encodeURIComponent(location.Located_City)}`);
-            if (response.ok) {
-              const weatherData = await response.json();
-              return { location: location.Location_Name, weather: weatherData };
-            }
-          } catch (error) {
-            console.error(`Error fetching weather for ${location.Located_City}:`, error);
-          }
-          return null;
-        });
-
-        const weatherResults = await Promise.all(weatherPromises);
-        const validWeatherData = weatherResults.filter(Boolean);
-        setWeatherData(validWeatherData);
-      } else {
-        setIsWeatherLoading(false);
-      }
     } catch (error) {
       console.error("Error fetching recommendations:", error);
-      setIsWeatherLoading(false);
     } finally {
       setIsLoading(false);
     }
@@ -282,13 +236,6 @@ export default function FindDestinationsPage() {
       default:
         return <MapPin className={iconClass} />;
     }
-  };
-
-  // Function to get weather data for a specific location
-  const getLocationWeather = (
-    locationName: string
-  ): LocationWeather | undefined => {
-    return weatherData.find((weather) => weather.location === locationName);
   };
 
   return (
@@ -490,7 +437,7 @@ export default function FindDestinationsPage() {
                         </div>
 
                         {/* Location type and sentiment */}
-                        <div className="mb-2 flex flex-wrap gap-2">
+                        <div className="mb-4 flex flex-wrap gap-2">
                           <span className="inline-block bg-secondary/50 text-secondary-foreground text-sm font-medium px-3 py-1 rounded-full capitalize">
                             {rec.Location_Type}
                           </span>
@@ -523,152 +470,6 @@ export default function FindDestinationsPage() {
                             )}
                           </div>
                         </div>
-
-                        {/* Location Description */}
-                        {(() => {
-                          const locationWeather = getLocationWeather(
-                            rec.Location_Name
-                          );
-
-                          // Show skeleton while weather/description is loading
-                          if (isWeatherLoading) {
-                            return (
-                              <div className="mb-4">
-                                <Skeleton className="h-4 w-full mb-2" />
-                                <Skeleton className="h-4 w-3/4" />
-                              </div>
-                            );
-                          }
-
-                          // Show description if available
-                          if (locationWeather?.description) {
-                            return (
-                              <div className="mb-4">
-                                <p className="text-sm text-muted-foreground leading-relaxed">
-                                  {locationWeather.description}
-                                </p>
-                              </div>
-                            );
-                          }
-
-                          return null;
-                        })()}
-
-                        {/* Weather Forecast */}
-                        {(() => {
-                          const locationWeather = getLocationWeather(
-                            rec.Location_Name
-                          );
-
-                          // Show skeleton while weather is loading
-                          if (isWeatherLoading) {
-                            return (
-                              <div className="border-t pt-4">
-                                <div className="flex items-center gap-2 mb-3">
-                                  <Skeleton className="h-4 w-4" />
-                                  <Skeleton className="h-4 w-32" />
-                                </div>
-                                <div className="grid grid-cols-5 gap-2">
-                                  {Array.from({ length: 5 }).map((_, idx) => (
-                                    <div key={idx} className="text-center">
-                                      <Skeleton className="h-3 w-8 mx-auto mb-1" />
-                                      <Skeleton className="h-8 w-8 mx-auto mb-1" />
-                                      <Skeleton className="h-3 w-8 mx-auto mb-1" />
-                                      <Skeleton className="h-3 w-12 mx-auto" />
-                                    </div>
-                                  ))}
-                                </div>
-                                <div className="mt-3 pt-3 border-t border-muted/50">
-                                  <div className="grid grid-cols-2 gap-3">
-                                    <Skeleton className="h-3 w-20" />
-                                    <Skeleton className="h-3 w-16" />
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          }
-
-                          // Show weather data if available
-                          if (
-                            locationWeather &&
-                            locationWeather.forecast &&
-                            locationWeather.forecast.length > 0
-                          ) {
-                            return (
-                              <div className="border-t pt-4">
-                                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                                  <Cloud className="h-4 w-4" />
-                                  5-Day Weather Forecast
-                                </h4>
-                                <div className="grid grid-cols-5 gap-2">
-                                  {locationWeather.forecast
-                                    .slice(0, 5)
-                                    .map((day, idx) => (
-                                      <div key={idx} className="text-center">
-                                        <div className="text-xs text-muted-foreground mb-1">
-                                          {day.date.split(" ")[0]}
-                                        </div>
-                                        <Image
-                                          src={`https://openweathermap.org/img/wn/${day.icon}.png`}
-                                          alt={day.description}
-                                          width={32}
-                                          height={32}
-                                          className="w-8 h-8 mx-auto mb-1"
-                                        />
-                                        <div className="text-xs font-medium">
-                                          {day.temp}°C
-                                        </div>
-                                        <div className="text-xs text-muted-foreground">
-                                          {day.description.split(" ")[0]}
-                                        </div>
-                                      </div>
-                                    ))}
-                                </div>
-
-                                {/* Today's detailed weather */}
-                                {locationWeather.forecast[0] && (
-                                  <div className="mt-3 pt-3 border-t border-muted/50">
-                                    <div className="grid grid-cols-2 gap-3 text-xs">
-                                      <div className="flex items-center gap-1">
-                                        <Droplets className="h-3 w-3 text-blue-500" />
-                                        <span>
-                                          {locationWeather.forecast[0].humidity}
-                                          % humidity
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-1">
-                                        <Wind className="h-3 w-3 text-gray-500" />
-                                        <span>
-                                          {
-                                            locationWeather.forecast[0]
-                                              .windSpeed
-                                          }{" "}
-                                          km/h
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          }
-
-                          // Show "no weather data" message if weather loading is complete but no data
-                          if (!isWeatherLoading) {
-                            return (
-                              <div className="border-t pt-4">
-                                <div className="text-center py-4">
-                                  <Cloud className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-                                  <p className="text-sm text-muted-foreground">
-                                    No weather data available
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          }
-
-                          return null;
-                        })()}
 
                         {/* Action Buttons */}
                         <div className="mt-4 pt-4 border-t border-muted/30">
