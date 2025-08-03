@@ -36,7 +36,6 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { 
   getPersonalizedRecommendations, 
-  getFallbackRecommendations,
   type PersonalizedRecommendation,
   type PredictedInterest 
 } from "@/features/find-destinations/actions";
@@ -436,7 +435,7 @@ export default function FindDestinationsPage() {
                     <Loader2 className="h-5 w-5 animate-spin text-primary" />
                     <span className="text-muted-foreground">
                       {usingPredictedInterests 
-                        ? "Getting your AI-powered personalized recommendations..."
+                        ? "Getting your combined recommendations (interests + AI predictions)..."
                         : "Getting your personalized recommendations..."
                       }
                     </span>

@@ -1,15 +1,14 @@
-export { 
-  getTopRatedLocations, 
+export {
+  getTopRatedLocations,
   getTopRatedLocationsByCategory,
   getTopRatedLocationsWithMinFeedback,
   getTopRatedLocationsByCity,
-  type TopRatedLocation 
+  type TopRatedLocation,
 } from './getTopRatedLocations';
 
 export {
   getPersonalizedRecommendations,
-  getFallbackRecommendations,
   type PersonalizedRecommendation,
   type PredictedInterest,
-  type PersonalizedRecommendationsResponse
+  type PersonalizedRecommendationsResponse,
 } from './getPersonalizedRecommendations'; 

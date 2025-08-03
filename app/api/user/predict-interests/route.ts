@@ -52,6 +52,10 @@ export async function POST(request: NextRequest) {
       interests: user.interests
     });
 
+    // Initialize with user's existing interests
+    let allLocationTypes = [...(user.interests || [])];
+    let predictedInterests: PredictedInterest[] = [];
+
     // Prepare user profile for prediction
     const userProfile: UserProfile = {
       comments: user.introduction || '',
@@ -61,6 +65,7 @@ export async function POST(request: NextRequest) {
     };
 
     console.log('📝 [API Route] User profile for prediction:', userProfile);
+    console.log('🔍 [API Route] User interests from database:', user.interests);
 
     // Call FastAPI prediction endpoint
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
@@ -84,99 +89,41 @@ export async function POST(request: NextRequest) {
 
       console.log('📡 [API Route] FastAPI response status:', response.status);
 
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Unknown error');
-        console.error(`❌ [API Route] FastAPI error (${response.status}): ${errorText}`);
+      if (response.ok) {
+        const predictionData: PredictionResponse = await response.json();
         
-        return NextResponse.json(
-          { error: `Prediction API request failed with status ${response.status}` },
-          { status: response.status }
-        );
-      }
+        console.log('🎯 [API Route] Raw prediction data from FastAPI:', predictionData);
+        
+        // Validate response format
+        if (predictionData.top_interests && Array.isArray(predictionData.top_interests)) {
+          console.log('✅ [API Route] Validated predicted interests:', predictionData.top_interests);
 
-      const predictionData: PredictionResponse = await response.json();
-      
-      console.log('🎯 [API Route] Raw prediction data from FastAPI:', predictionData);
-      
-      // Validate response format
-      if (!predictionData.top_interests || !Array.isArray(predictionData.top_interests)) {
-        console.error('❌ [API Route] Invalid prediction API response format:', predictionData);
-        return NextResponse.json(
-          { error: 'Invalid response format from prediction API' },
-          { status: 500 }
-        );
-      }
+          // Extract location types from predictions
+          // FastAPI returns: [['location_type', confidence], ['location_type', confidence], ...]
+          const predictedLocationTypes = predictionData.top_interests
+            .filter((interest: any) => Array.isArray(interest) && interest.length >= 2)
+            .map((interest: any) => interest[0]); // Get the location_type (first element)
 
-      console.log('✅ [API Route] Validated predicted interests:', predictionData.top_interests);
+          console.log('📍 [API Route] AI predicted location types:', predictedLocationTypes);
 
-      // Extract location types from predictions
-      // FastAPI returns: [['location_type', confidence], ['location_type', confidence], ...]
-      const predictedLocationTypes = predictionData.top_interests
-        .filter((interest: any) => Array.isArray(interest) && interest.length >= 2)
-        .map((interest: any) => interest[0]); // Get the location_type (first element)
+          // Combine user interests with AI predictions (avoid duplicates)
+          const newTypes = predictedLocationTypes.filter(type => !allLocationTypes.includes(type));
+          allLocationTypes = [...allLocationTypes, ...newTypes];
 
-      console.log('📍 [API Route] Location types to search for:', predictedLocationTypes);
+          // Transform predicted interests to match expected format
+          predictedInterests = predictionData.top_interests
+            .filter((interest: any) => Array.isArray(interest) && interest.length >= 2)
+            .map((interest: any) => ({
+              location_type: interest[0],
+              confidence: interest[1]
+            }));
 
-      // Get locations from database based on predicted interests
-      const recommendedLocations = await prisma.location.findMany({
-        where: {
-          type: {
-            in: predictedLocationTypes
-          },
-          overallRating: {
-            gt: 0
-          }
-        },
-        orderBy: {
-          overallRating: 'desc'
-        },
-        take: 6,
-        include: {
-          _count: {
-            select: {
-              feedbacks: true
-            }
-          }
+          console.log('🎉 [API Route] Combined location types:', allLocationTypes);
         }
-      });
-
-      console.log('🗺️ [API Route] Found locations in database:', recommendedLocations.length);
-      console.log('📍 [API Route] Location details:', recommendedLocations.map(loc => ({
-        name: loc.name,
-        type: loc.type,
-        rating: loc.overallRating,
-        reviewCount: loc._count?.feedbacks || 0
-      })));
-
-      // Transform to match the expected format
-      const formattedRecommendations = recommendedLocations.map(location => ({
-        Location_Name: location.name,
-        Located_City: location.locatedCity,
-        Location_Type: location.type,
-        Rating: location.overallRating,
-        Sentiment: 'Positive', // Default sentiment
-        Sentiment_Score: location.overallRating / 5, // Normalize to 0-1 range
-        reviewCount: location._count?.feedbacks || 0
-      }));
-
-      console.log('🎉 [API Route] Final response:', {
-        recommendationsCount: formattedRecommendations.length,
-        predictedInterestsCount: predictionData.top_interests.length
-      });
-
-      // Transform predicted interests to match expected format
-      const formattedPredictedInterests = predictionData.top_interests
-        .filter((interest: any) => Array.isArray(interest) && interest.length >= 2)
-        .map((interest: any) => ({
-          location_type: interest[0],
-          confidence: interest[1]
-        }));
-
-      return NextResponse.json({
-        recommendations: formattedRecommendations,
-        predictedInterests: formattedPredictedInterests
-      });
-
+      } else {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        console.warn(`⚠️ [API Route] FastAPI error (${response.status}): ${errorText}`);
+      }
     } catch (error) {
       clearTimeout(timeout);
       
@@ -188,8 +135,70 @@ export async function POST(request: NextRequest) {
         );
       }
       
-      throw error;
+      console.warn('⚠️ [API Route] Failed to get AI predictions, using only user interests:', error);
     }
+
+    // If no interests at all, return error
+    if (allLocationTypes.length === 0) {
+      return NextResponse.json(
+        { error: 'No interests found. Please set your interests first.' },
+        { status: 400 }
+      );
+    }
+
+    console.log('🔍 [API Route] Final location types to search for:', allLocationTypes);
+
+    // Get locations from database based on combined interests
+    const recommendedLocations = await prisma.location.findMany({
+      where: {
+        type: {
+          in: allLocationTypes
+        },
+        overallRating: {
+          gt: 0
+        }
+      },
+      orderBy: {
+        overallRating: 'desc'
+      },
+      take: 8, // Increased to accommodate more interests
+      include: {
+        _count: {
+          select: {
+            feedbacks: true
+          }
+        }
+      }
+    });
+
+    console.log('🗺️ [API Route] Found locations in database:', recommendedLocations.length);
+    console.log('📍 [API Route] Location details:', recommendedLocations.map(loc => ({
+      name: loc.name,
+      type: loc.type,
+      rating: loc.overallRating,
+      reviewCount: loc._count?.feedbacks || 0
+    })));
+
+    // Transform to match the expected format
+    const formattedRecommendations = recommendedLocations.map(location => ({
+      Location_Name: location.name,
+      Located_City: location.locatedCity,
+      Location_Type: location.type,
+      Rating: location.overallRating,
+      Sentiment: 'Positive', // Default sentiment
+      Sentiment_Score: location.overallRating / 5, // Normalize to 0-1 range
+      reviewCount: location._count?.feedbacks || 0
+    }));
+
+    console.log('🎉 [API Route] Final response:', {
+      recommendationsCount: formattedRecommendations.length,
+      predictedInterestsCount: predictedInterests.length
+    });
+
+    return NextResponse.json({
+      recommendations: formattedRecommendations,
+      predictedInterests: predictedInterests
+    });
   } catch (error) {
     console.error('❌ [API Route] Error predicting user interests:', error);
     return NextResponse.json(
