@@ -1,114 +1,209 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
+import { Footer } from "../../components/landing/Footer";
+import { Navbar } from "../../components/landing/Navbar";
 import {
+  Heart,
+  Calendar,
+  ArrowRight,
+  Sparkles,
+  Bookmark,
   MapPin,
   Star,
   Loader2,
-  Trash2,
-  ExternalLink,
-  Bookmark,
 } from "lucide-react";
-import { Navbar } from "../../components/landing/Navbar";
-import { Footer } from "../../components/landing/Footer";
-import { useUser } from "@clerk/nextjs";
-import Link from "next/link";
+import { motion } from "framer-motion";
+import { useToast } from "@/components/ui/use-toast";
 
-interface BookmarkData {
+interface BookmarkItem {
   id: string;
   locationName: string;
   locatedCity: string;
   locationType: string;
   rating: number;
-  personalizedScore: number; // This is now Sentiment_Score from the API
+  personalizedScore: number;
   createdAt: string;
 }
 
 export default function BookmarksPage() {
-  const { user } = useUser();
-  const [bookmarks, setBookmarks] = useState<BookmarkData[]>([]);
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
+  const { toast } = useToast();
+  
+  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [deleteLoading, setDeleteLoading] = useState<Set<string>>(new Set());
 
-  const fetchBookmarks = useCallback(async () => {
-    if (!user) return;
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.8,
+        staggerChildren: 0.15,
+      },
+    },
+  };
 
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/bookmarks");
-      if (response.ok) {
-        const data = await response.json();
-        setBookmarks(data.bookmarks);
-      }
-    } catch (error) {
-      console.error("Error fetching bookmarks:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 40, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.7,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
+  const floatingVariants = {
+    animate: {
+      y: [-10, 10, -10],
+      transition: {
+        duration: 4,
+        repeat: Infinity,
+        ease: "easeInOut" as const,
+      },
+    },
+  };
 
   useEffect(() => {
-    if (user) {
-      fetchBookmarks();
-    }
-  }, [user, fetchBookmarks]);
+    const fetchBookmarks = async () => {
+      if (!isLoaded || !user) {
+        setIsLoading(false);
+        return;
+      }
+      
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/bookmarks");
+        if (response.ok) {
+          const data = await response.json();
+          setBookmarks(data.bookmarks || []);
+        }
+      } catch (error) {
+        console.error("Error fetching bookmarks:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load bookmarks",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleDeleteBookmark = async (bookmark: BookmarkData) => {
-    if (!user) return;
+    fetchBookmarks();
+  }, [isLoaded, user, toast]);
 
-    setDeleteLoading((prev) => new Set(prev).add(bookmark.id));
-
+  const handleRemoveBookmark = async (bookmarkId: string) => {
     try {
-      const response = await fetch("/api/bookmarks", {
+      const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          locationName: bookmark.locationName,
-          locatedCity: bookmark.locatedCity,
-        }),
       });
 
       if (response.ok) {
-        setBookmarks((prev) => prev.filter((b) => b.id !== bookmark.id));
+        setBookmarks(prev => prev.filter(bookmark => bookmark.id !== bookmarkId));
+        toast({
+          title: "Success",
+          description: "Bookmark removed successfully",
+        });
+      } else {
+        throw new Error("Failed to remove bookmark");
       }
     } catch (error) {
-      console.error("Error deleting bookmark:", error);
-    } finally {
-      setDeleteLoading((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(bookmark.id);
-        return newSet;
+      console.error("Error removing bookmark:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove bookmark",
+        variant: "destructive",
       });
     }
   };
 
-  const handleViewMore = (bookmark: BookmarkData) => {
-    const searchQuery = `${bookmark.locationName} ${bookmark.locatedCity} Sri Lanka tourist attractions`;
-    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(
-      searchQuery
-    )}`;
-    window.open(googleSearchUrl, "_blank", "noopener,noreferrer");
-  };
+  if (!isLoaded) {
+    return (
+      <div className="flex flex-col min-h-screen bg-background">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Card className="max-w-md mx-auto bg-card border border-border">
+              <CardContent className="p-8 text-center">
+                <motion.div
+                  className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-3xl mb-4"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                >
+                  <Bookmark className="h-8 w-8 text-primary" />
+                </motion.div>
+                <p className="text-muted-foreground">Loading bookmarks...</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-background">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <Card className="max-w-md mx-auto">
-            <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground mb-4">
-                Please sign in to view your bookmarks.
-              </p>
-              <Button asChild>
-                <Link href="/sign-in">Sign In</Link>
-              </Button>
-            </CardContent>
-          </Card>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Card className="max-w-md mx-auto bg-card border border-border">
+              <CardContent className="p-8 text-center">
+                <motion.div
+                  className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-3xl mb-4"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                >
+                  <Heart className="h-8 w-8 text-primary" />
+                </motion.div>
+                <h3 className="text-xl font-bold text-foreground mb-2">
+                  Sign In Required
+                </h3>
+                <p className="text-muted-foreground mb-6">
+                  Please sign in to view your bookmarks.
+                </p>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button 
+                    onClick={() => router.push("/sign-in")}
+                    className="bg-primary hover:bg-primary/90 rounded-full px-6 py-2"
+                  >
+                    Sign In
+                  </Button>
+                </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
         <Footer />
       </div>
@@ -116,135 +211,175 @@ export default function BookmarksPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
+      <div className="flex-1 relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 -z-10">
+          <motion.div
+            className="absolute top-20 left-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"
+            variants={floatingVariants}
+            animate="animate"
+          />
+          <motion.div
+            className="absolute top-40 right-20 w-40 h-40 bg-primary/5 rounded-full blur-3xl"
+            variants={floatingVariants}
+            animate="animate"
+            style={{ animationDelay: "2s" }}
+          />
+          <motion.div
+            className="absolute bottom-40 left-20 w-24 h-24 bg-primary/5 rounded-full blur-3xl"
+            variants={floatingVariants}
+            animate="animate"
+            style={{ animationDelay: "4s" }}
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
+        </div>
 
-      <div className="flex-1">
-        <div className="container max-w-6xl mx-auto px-4 py-12">
-          <div className="text-center mb-10">
-            <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+        <motion.div 
+          className="container max-w-6xl mx-auto px-4 py-16"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Header Section */}
+          <motion.div 
+            className="text-center mb-12"
+            variants={itemVariants}
+          >
+            <motion.div
+              className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-3xl mb-6"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+            >
+              <Bookmark className="h-8 w-8 text-primary" />
+            </motion.div>
+            
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground">
               My Bookmarks
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Your saved destinations for future adventures
+            
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Your saved destinations and favorite places
             </p>
-          </div>
+          </motion.div>
 
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="ml-2 text-muted-foreground">
-                Loading your bookmarks...
-              </span>
-            </div>
-          ) : bookmarks.length === 0 ? (
-            <Card className="max-w-md mx-auto">
-              <CardContent className="p-6 text-center">
-                <Bookmark className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No bookmarks yet</h3>
-                <p className="text-muted-foreground mb-4">
-                  Start exploring destinations and bookmark the ones you&apos;d
-                  like to visit.
-                </p>
-                <Button asChild>
-                  <a href="/discover">Discover Locations</a>
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {bookmarks.map((bookmark) => (
-                <Card
-                  key={bookmark.id}
-                  className="overflow-hidden hover:shadow-lg transition-all duration-300"
+            <motion.div 
+              className="space-y-8"
+              variants={containerVariants}
+            >
+              <motion.div className="flex items-center justify-center" variants={itemVariants}>
+                <motion.div
+                  className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-3xl"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                 >
-                  <CardContent className="p-6">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-xl leading-tight mb-2 text-foreground">
-                          {bookmark.locationName}
-                        </h3>
-                        <div className="flex items-center gap-2 mb-3">
-                          <MapPin className="h-5 w-5" />
-                          <span className="text-base font-medium text-muted-foreground">
-                            {bookmark.locatedCity}
+                  <Loader2 className="h-8 w-8 text-primary" />
+                </motion.div>
+              </motion.div>
+            </motion.div>
+          ) : bookmarks.length === 0 ? (
+            <motion.div 
+              className="text-center"
+              variants={itemVariants}
+            >
+              <motion.div
+                className="inline-flex items-center justify-center w-24 h-24 bg-primary/10 rounded-3xl mb-6"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+              >
+                <Bookmark className="h-12 w-12 text-primary" />
+              </motion.div>
+              
+              <h3 className="text-2xl font-bold text-foreground mb-4">
+                No Bookmarks Yet
+              </h3>
+              
+              <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                Start exploring destinations and bookmark your favorite places to see them here.
+              </p>
+              
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  onClick={() => router.push("/locations")}
+                  className="bg-primary hover:bg-primary/90 rounded-full px-8 py-3 text-lg font-semibold"
+                >
+                  Discover Locations
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </motion.div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              variants={containerVariants}
+            >
+              {bookmarks.map((bookmark) => (
+                <motion.div key={bookmark.id} variants={cardVariants}>
+                  <Card className="bg-card backdrop-blur-xl border border-border hover:border-border/60 transition-all duration-300 group">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-5 w-5 text-primary" />
+                          <span className="text-sm text-muted-foreground">
+                            {bookmark.locationType}
                           </span>
                         </div>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        {/* Rating */}
-                        <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-full">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm font-semibold">
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                          <span className="text-sm font-medium text-foreground">
                             {bookmark.rating.toFixed(1)}
                           </span>
                         </div>
-                        {/* Match Score */}
-                        <div className="flex items-center gap-1 bg-primary/10 dark:bg-primary/20 px-2 py-1 rounded-full">
-                          <div className="h-4 w-4 rounded-full bg-primary flex items-center justify-center">
-                            <span className="text-xs font-bold text-primary-foreground">
-                              %
-                            </span>
-                          </div>
-                          <span className="text-sm font-semibold text-primary">
-                            {(bookmark.personalizedScore * 100).toFixed(0)}
+                      </div>
+                      
+                      <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
+                        {bookmark.locationName}
+                      </h3>
+                      
+                      <p className="text-muted-foreground mb-4">
+                        {bookmark.locatedCity}
+                      </p>
+                      
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="flex items-center gap-1 px-2 py-1 bg-purple-500/10 rounded-full">
+                          <Sparkles className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                          <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
+                            {bookmark.personalizedScore.toFixed(1)}% match
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 px-2 py-1 bg-blue-500/10 rounded-full">
+                          <Calendar className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                          <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                            {new Date(bookmark.createdAt).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Location type */}
-                    <div className="mb-4">
-                      <span className="inline-block bg-secondary/50 text-secondary-foreground text-sm font-medium px-3 py-1 rounded-full capitalize">
-                        {bookmark.locationType}
-                      </span>
-                    </div>
-
-                    {/* Bookmarked date */}
-                    <div className="mb-4 text-xs text-muted-foreground">
-                      Bookmarked on{" "}
-                      {new Date(bookmark.createdAt).toLocaleDateString(
-                        "en-US",
-                        {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        }
-                      )}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => handleViewMore(bookmark)}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        More Info
-                      </Button>
-
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteBookmark(bookmark)}
-                        disabled={deleteLoading.has(bookmark.id)}
-                      >
-                        {deleteLoading.has(bookmark.id) ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 border-border hover:border-border/60 rounded-full"
+                          onClick={() => router.push(`/locations/${bookmark.id}`)}
+                        >
+                          View Details
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-border hover:border-border/60 rounded-full"
+                          onClick={() => handleRemoveBookmark(bookmark.id)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       </div>
 
       <Footer />

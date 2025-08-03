@@ -50,6 +50,12 @@ export function Navbar() {
             >
               My Bookmarks
             </Link>
+            <Link
+              href="/profile"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Profile
+            </Link>
           </nav>
         ) : null}
 
@@ -117,6 +123,13 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   My Bookmarks
+                </Link>
+                <Link
+                  href="/profile"
+                  className="px-3 py-2 rounded-md hover:bg-muted"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Profile
                 </Link>
               </>
             ) : (

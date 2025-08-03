@@ -1,14 +1,6 @@
-export {
-  getTopRatedLocations,
-  getTopRatedLocationsByCategory,
-  getTopRatedLocationsWithMinFeedback,
-  getTopRatedLocationsByCity,
-  type TopRatedLocation,
-} from './getTopRatedLocations';
+export { getTopRatedLocations } from "./getTopRatedLocations";
+export { getPersonalizedRecommendations } from "./getPersonalizedRecommendations";
+export { updateUserProfile, getUserProfile } from "./updateUserProfile";
 
-export {
-  getPersonalizedRecommendations,
-  type PersonalizedRecommendation,
-  type PredictedInterest,
-  type PersonalizedRecommendationsResponse,
-} from './getPersonalizedRecommendations'; 
+export type { PersonalizedRecommendation, PredictedInterest } from "./getPersonalizedRecommendations";
+export type { UpdateUserProfileData } from "./updateUserProfile"; 
