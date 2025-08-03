@@ -1,153 +1,89 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
-import { Footer } from "../../components/landing/Footer";
-import { Navbar } from "../../components/landing/Navbar";
-import {
-  User,
-  Mail,
-  Edit3,
-  Save,
-  X,
-  Bookmark,
+import { getUserProfile, updateUserProfile, UpdateUserProfileData } from "@/features/find-destinations/actions";
+import { Navbar } from "@/components/landing/Navbar";
+import { 
+  User, 
+  Mail, 
+  FileText, 
+  Edit3, 
+  Save, 
+  X, 
+  Bookmark, 
   Heart,
   Calendar,
-  Camera,
-  ArrowRight,
-  UserCheck,
-  Sparkles,
+  Clock
 } from "lucide-react";
-import { motion } from "framer-motion";
-import { 
-  getUserProfile, 
-  updateUserProfile, 
-  type UpdateUserProfileData 
-} from "@/features/find-destinations/actions";
-import { useToast } from "@/components/ui/use-toast";
-
-interface UserProfile {
-  id: string;
-  clerkUserId: string;
-  firstName: string | null;
-  lastName: string | null;
-  email: string | null;
-  bio: string | null;
-  profileImage: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 export default function ProfilePage() {
-  const { user: clerkUser, isLoaded } = useUser();
-  const router = useRouter();
+  const { user, isLoaded } = useUser();
   const { toast } = useToast();
+  const router = useRouter();
   
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState<UpdateUserProfileData>({
-    firstName: "",
-    lastName: "",
+  const [isLoading, setIsLoading] = useState(false);
+  const [profileData, setProfileData] = useState<UpdateUserProfileData>({
+    name: "",
     email: "",
-    bio: "",
-    profileImage: "",
+    introduction: "",
   });
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: 0.8,
-        staggerChildren: 0.15,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut" as const,
-      },
-    },
-  };
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 40, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.7,
-        ease: "easeOut" as const,
-      },
-    },
-  };
-
-  const floatingVariants = {
-    animate: {
-      y: [-10, 10, -10],
-      transition: {
-        duration: 4,
-        repeat: Infinity,
-        ease: "easeInOut" as const,
-      },
-    },
-  };
+  const [dbProfile, setDbProfile] = useState<any>(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!isLoaded || !clerkUser) return;
+    if (isLoaded && user) {
+      // Initialize with Clerk data
+      setProfileData({
+        name: user.fullName || "",
+        email: user.primaryEmailAddress?.emailAddress || "",
+        introduction: "",
+      });
       
-      setIsLoading(true);
-      try {
-        const result = await getUserProfile();
-        if (result.success && result.user) {
-          setProfile(result.user);
-          setFormData({
-            firstName: result.user.firstName || "",
-            lastName: result.user.lastName || "",
-            email: result.user.email || "",
-            bio: result.user.bio || "",
-            profileImage: result.user.profileImage || "",
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load profile data",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      // Fetch database profile
+      fetchProfile();
+    }
+  }, [isLoaded, user]);
 
-    fetchProfile();
-  }, [isLoaded, clerkUser, toast]);
+  const fetchProfile = async () => {
+    try {
+      const result = await getUserProfile();
+      if (result.success && result.user) {
+        setDbProfile(result.user);
+        // Update form with database data
+        setProfileData({
+          name: result.user.name || user?.fullName || "",
+          email: result.user.email || user?.primaryEmailAddress?.emailAddress || "",
+          introduction: result.user.introduction || "",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch profile data",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleSave = async () => {
-    if (!clerkUser) return;
-
-    setIsSaving(true);
+    if (!user) return;
+    
+    setIsLoading(true);
     try {
-      const result = await updateUserProfile(formData);
+      const result = await updateUserProfile(profileData);
       if (result.success) {
-        setProfile(result.user);
+        setDbProfile(result.user);
         setIsEditing(false);
         toast({
           title: "Success",
@@ -162,441 +98,304 @@ export default function ProfilePage() {
         variant: "destructive",
       });
     } finally {
-      setIsSaving(false);
+      setIsLoading(false);
     }
   };
 
   const handleCancel = () => {
-    if (profile) {
-      setFormData({
-        firstName: profile.firstName || "",
-        lastName: profile.lastName || "",
-        email: profile.email || "",
-        bio: profile.bio || "",
-        profileImage: profile.profileImage || "",
+    // Reset to original data
+    if (dbProfile) {
+      setProfileData({
+        name: dbProfile.name || user?.fullName || "",
+        email: dbProfile.email || user?.primaryEmailAddress?.emailAddress || "",
+        introduction: dbProfile.introduction || "",
       });
     }
     setIsEditing(false);
   };
 
-  const handleInputChange = (field: keyof UpdateUserProfileData, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
   if (!isLoaded) {
     return (
-      <div className="flex flex-col min-h-screen bg-background">
+      <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <Card className="max-w-md mx-auto bg-card border border-border">
-              <CardContent className="p-8 text-center">
-                <motion.div
-                  className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-3xl mb-4"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                >
-                  <User className="h-8 w-8 text-primary" />
-                </motion.div>
-                <p className="text-muted-foreground">Loading profile...</p>
-              </CardContent>
-            </Card>
-          </motion.div>
+        <div className="container mx-auto px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-1/4 mb-4"></div>
+            <div className="h-64 bg-muted rounded"></div>
+          </div>
         </div>
-        <Footer />
       </div>
     );
   }
 
-  if (!clerkUser) {
+  if (!user) {
     return (
-      <div className="flex flex-col min-h-screen bg-background">
+      <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <Card className="max-w-md mx-auto bg-card border border-border">
-              <CardContent className="p-8 text-center">
-                <motion.div
-                  className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-3xl mb-4"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                >
-                  <User className="h-8 w-8 text-primary" />
-                </motion.div>
-                <h3 className="text-xl font-bold text-foreground mb-2">
-                  Sign In Required
-                </h3>
-                <p className="text-muted-foreground mb-6">
+        <div className="container mx-auto px-4 py-8">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold mb-4">Sign In Required</h2>
+                <p className="text-muted-foreground mb-4">
                   Please sign in to view your profile.
                 </p>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button 
-                    onClick={() => router.push("/sign-in")}
-                    className="bg-primary hover:bg-primary/90 rounded-full px-6 py-2"
-                  >
-                    Sign In
-                  </Button>
-                </motion.div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                <Button onClick={() => router.push("/sign-in")}>
+                  Sign In
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="flex-1 relative overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0 -z-10">
-          <motion.div
-            className="absolute top-20 left-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"
-            variants={floatingVariants}
-            animate="animate"
-          />
-          <motion.div
-            className="absolute top-40 right-20 w-40 h-40 bg-primary/5 rounded-full blur-3xl"
-            variants={floatingVariants}
-            animate="animate"
-            style={{ animationDelay: "2s" }}
-          />
-          <motion.div
-            className="absolute bottom-40 left-20 w-24 h-24 bg-primary/5 rounded-full blur-3xl"
-            variants={floatingVariants}
-            animate="animate"
-            style={{ animationDelay: "4s" }}
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
-        </div>
-
-        <motion.div 
-          className="container max-w-4xl mx-auto px-4 py-16"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
+      
+      <div className="container mx-auto px-4 py-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          {/* Header Section */}
-          <motion.div 
-            className="text-center mb-12"
-            variants={itemVariants}
-          >
-            <motion.div
-              className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-3xl mb-6"
-              whileHover={{ scale: 1.1, rotate: 5 }}
+          {/* Header */}
+          <div className="mb-8">
+            <motion.h1 
+              className="text-4xl font-bold text-foreground mb-2"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
             >
-              <User className="h-8 w-8 text-primary" />
-            </motion.div>
-            
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground">
-              My Profile
-            </h1>
-            
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Manage your personal information and preferences
-            </p>
-          </motion.div>
+              Profile
+            </motion.h1>
+            <motion.p 
+              className="text-muted-foreground"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              Manage your account settings and preferences
+            </motion.p>
+          </div>
 
-          {isLoading ? (
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* Profile Card */}
             <motion.div 
-              className="space-y-8"
-              variants={containerVariants}
+              className="lg:col-span-2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
             >
-              <motion.div variants={cardVariants}>
-                <Card className="bg-card backdrop-blur-xl border border-border">
-                  <CardHeader>
-                    <Skeleton className="h-8 w-48 bg-muted" />
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="flex items-center gap-4">
-                      <Skeleton className="w-20 h-20 rounded-full bg-muted" />
-                      <div className="space-y-2 flex-1">
-                        <Skeleton className="h-6 w-32 bg-muted" />
-                        <Skeleton className="h-4 w-48 bg-muted" />
-                      </div>
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <User className="h-5 w-5" />
+                        Profile Information
+                      </CardTitle>
+                      <CardDescription>
+                        Update your personal information
+                      </CardDescription>
                     </div>
-                    <div className="space-y-4">
-                      <Skeleton className="h-12 w-full bg-muted" />
-                      <Skeleton className="h-12 w-full bg-muted" />
-                      <Skeleton className="h-12 w-full bg-muted" />
-                      <Skeleton className="h-24 w-full bg-muted" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </motion.div>
-          ) : (
-            <motion.div 
-              className="space-y-8"
-              variants={containerVariants}
-            >
-              {/* Profile Information Card */}
-              <motion.div variants={cardVariants}>
-                <Card className="bg-card backdrop-blur-xl border border-border">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-2xl font-bold text-foreground">
-                      Personal Information
-                    </CardTitle>
-                    <div className="flex gap-2">
-                      {isEditing ? (
-                        <>
-                          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                            <Button
-                              onClick={handleSave}
-                              disabled={isSaving}
-                              className="bg-primary hover:bg-primary/90 rounded-full px-4 py-2"
-                              size="sm"
-                            >
-                              {isSaving ? (
-                                <motion.div
-                                  className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full"
-                                  animate={{ rotate: 360 }}
-                                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                                />
-                              ) : (
-                                <Save className="h-4 w-4 mr-2" />
-                              )}
-                              Save
-                            </Button>
-                          </motion.div>
-                          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                            <Button
-                              onClick={handleCancel}
-                              variant="outline"
-                              className="border-border hover:border-border/60 rounded-full px-4 py-2"
-                              size="sm"
-                            >
-                              <X className="h-4 w-4 mr-2" />
-                              Cancel
-                            </Button>
-                          </motion.div>
-                        </>
-                      ) : (
-                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                          <Button
-                            onClick={() => setIsEditing(true)}
-                            variant="outline"
-                            className="border-border hover:border-border/60 rounded-full px-4 py-2"
-                            size="sm"
-                          >
-                            <Edit3 className="h-4 w-4 mr-2" />
-                            Edit
-                          </Button>
-                        </motion.div>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* Profile Image */}
-                    <div className="flex items-center gap-6">
-                      <motion.div
-                        className="relative w-24 h-24 rounded-full overflow-hidden bg-primary/10 border-4 border-primary/20"
-                        whileHover={{ scale: 1.05 }}
+                    {!isEditing ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsEditing(true)}
+                        className="flex items-center gap-2"
                       >
-                        {formData.profileImage ? (
+                        <Edit3 className="h-4 w-4" />
+                        Edit
+                      </Button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={handleSave}
+                          disabled={isLoading}
+                          className="flex items-center gap-2"
+                        >
+                          <Save className="h-4 w-4" />
+                          {isLoading ? "Saving..." : "Save"}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleCancel}
+                          disabled={isLoading}
+                          className="flex items-center gap-2"
+                        >
+                          <X className="h-4 w-4" />
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Profile Image */}
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="relative">
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                        {user.imageUrl ? (
                           <img
-                            src={formData.profileImage}
+                            src={user.imageUrl}
                             alt="Profile"
-                            className="w-full h-full object-cover"
+                            className="w-20 h-20 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <User className="h-12 w-12 text-primary" />
-                          </div>
+                          <User className="h-10 w-10 text-primary" />
                         )}
-                        {isEditing && (
-                          <motion.div
-                            className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
-                            whileHover={{ scale: 1.1 }}
-                          >
-                            <Camera className="h-6 w-6 text-white" />
-                          </motion.div>
-                        )}
-                      </motion.div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-bold text-foreground mb-1">
-                          {formData.firstName && formData.lastName 
-                            ? `${formData.firstName} ${formData.lastName}`
-                            : "Your Name"
-                          }
-                        </h3>
-                        <p className="text-muted-foreground">
-                          {formData.email || "your.email@example.com"}
-                        </p>
                       </div>
                     </div>
-
-                    {/* Form Fields */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">First Name</label>
-                        <Input
-                          value={formData.firstName}
-                          onChange={(e) => handleInputChange("firstName", e.target.value)}
-                          disabled={!isEditing}
-                          className="bg-background border border-border"
-                          placeholder="Enter your first name"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">Last Name</label>
-                        <Input
-                          value={formData.lastName}
-                          onChange={(e) => handleInputChange("lastName", e.target.value)}
-                          disabled={!isEditing}
-                          className="bg-background border border-border"
-                          placeholder="Enter your last name"
-                        />
-                      </div>
+                    <div>
+                      <h3 className="font-semibold text-lg">
+                        {user.fullName || "User"}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {user.primaryEmailAddress?.emailAddress}
+                      </p>
                     </div>
+                  </div>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Email</label>
+                  <Separator />
+
+                  {/* Name Field */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Full Name
+                    </label>
+                    {isEditing ? (
                       <Input
-                        value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
-                        disabled={!isEditing}
-                        className="bg-background border border-border"
+                        value={profileData.name}
+                        onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                        placeholder="Enter your full name"
+                      />
+                    ) : (
+                      <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                        {profileData.name || "Not set"}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Email Field */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      Email Address
+                    </label>
+                    {isEditing ? (
+                      <Input
+                        value={profileData.email}
+                        onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
                         placeholder="Enter your email"
                         type="email"
                       />
-                    </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                        {profileData.email || "Not set"}
+                      </p>
+                    )}
+                  </div>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Bio</label>
+                  {/* Introduction Field */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Introduction
+                    </label>
+                    {isEditing ? (
                       <Textarea
-                        value={formData.bio}
-                        onChange={(e) => handleInputChange("bio", e.target.value)}
-                        disabled={!isEditing}
-                        className="bg-background border border-border min-h-[100px]"
+                        value={profileData.introduction}
+                        onChange={(e) => setProfileData({ ...profileData, introduction: e.target.value })}
                         placeholder="Tell us about yourself..."
+                        rows={4}
                       />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Profile Image URL</label>
-                      <Input
-                        value={formData.profileImage}
-                        onChange={(e) => handleInputChange("profileImage", e.target.value)}
-                        disabled={!isEditing}
-                        className="bg-background border border-border"
-                        placeholder="Enter image URL"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-
-              {/* Quick Actions Card */}
-              <motion.div variants={cardVariants}>
-                <Card className="bg-card backdrop-blur-xl border border-border">
-                  <CardHeader>
-                    <CardTitle className="text-2xl font-bold text-foreground flex items-center gap-2">
-                      <Sparkles className="h-6 w-6 text-primary" />
-                      Quick Actions
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button
-                          onClick={() => router.push("/bookmarks")}
-                          variant="outline"
-                          className="w-full h-16 border-border hover:border-border/60 rounded-2xl"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/10 rounded-xl">
-                              <Bookmark className="h-6 w-6 text-primary" />
-                            </div>
-                            <div className="text-left">
-                              <div className="font-semibold text-foreground">View Bookmarks</div>
-                              <div className="text-sm text-muted-foreground">Your saved destinations</div>
-                            </div>
-                            <ArrowRight className="h-5 w-5 ml-auto text-muted-foreground" />
-                          </div>
-                        </Button>
-                      </motion.div>
-
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button
-                          onClick={() => router.push("/interests")}
-                          variant="outline"
-                          className="w-full h-16 border-border hover:border-border/60 rounded-2xl"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/10 rounded-xl">
-                              <Heart className="h-6 w-6 text-primary" />
-                            </div>
-                            <div className="text-left">
-                              <div className="font-semibold text-foreground">Update Interests</div>
-                              <div className="text-sm text-muted-foreground">Customize your preferences</div>
-                            </div>
-                            <ArrowRight className="h-5 w-5 ml-auto text-muted-foreground" />
-                          </div>
-                        </Button>
-                      </motion.div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-
-              {/* Account Info Card */}
-              {profile && (
-                <motion.div variants={cardVariants}>
-                  <Card className="bg-card backdrop-blur-xl border border-border">
-                    <CardHeader>
-                      <CardTitle className="text-2xl font-bold text-foreground flex items-center gap-2">
-                        <UserCheck className="h-6 w-6 text-primary" />
-                        Account Information
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="flex items-center gap-3 p-4 bg-primary/5 rounded-2xl">
-                          <Calendar className="h-5 w-5 text-primary" />
-                          <div>
-                            <div className="text-sm text-muted-foreground">Member Since</div>
-                            <div className="font-medium text-foreground">
-                              {new Date(profile.createdAt).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-4 bg-primary/5 rounded-2xl">
-                          <Mail className="h-5 w-5 text-primary" />
-                          <div>
-                            <div className="text-sm text-muted-foreground">Clerk User ID</div>
-                            <div className="font-medium text-foreground font-mono text-sm">
-                              {profile.clerkUserId.slice(0, 8)}...
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
+                    ) : (
+                      <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                        {profileData.introduction || "No introduction provided"}
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </motion.div>
-          )}
+
+            {/* Quick Actions */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                  <CardDescription>
+                    Access your saved content and preferences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => router.push("/bookmarks")}
+                  >
+                    <Bookmark className="h-4 w-4 mr-2" />
+                    View Bookmarks
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => router.push("/interests")}
+                  >
+                    <Heart className="h-4 w-4 mr-2" />
+                    Update Interests
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Account Info */}
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle>Account Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Member since</span>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      <span className="text-sm">
+                        {dbProfile?.createdAt ? new Date(dbProfile.createdAt).toLocaleDateString() : "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Last updated</span>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      <span className="text-sm">
+                        {dbProfile?.updatedAt ? new Date(dbProfile.updatedAt).toLocaleDateString() : "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Interests</span>
+                    <Badge variant="secondary">
+                      {dbProfile?.interests?.length || 0}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
         </motion.div>
       </div>
-
-      <Footer />
     </div>
   );
 } 

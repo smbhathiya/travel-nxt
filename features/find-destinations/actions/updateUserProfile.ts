@@ -4,17 +4,15 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 
 export interface UpdateUserProfileData {
-  firstName?: string;
-  lastName?: string;
+  name?: string;
   email?: string;
-  bio?: string;
-  profileImage?: string;
+  introduction?: string;
 }
 
 export async function updateUserProfile(data: UpdateUserProfileData) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       throw new Error("User not authenticated");
     }
@@ -25,20 +23,17 @@ export async function updateUserProfile(data: UpdateUserProfileData) {
     const updatedUser = await prisma.user.upsert({
       where: { clerkUserId: userId },
       update: {
-        firstName: data.firstName,
-        lastName: data.lastName,
+        name: data.name,
         email: data.email,
-        bio: data.bio,
-        profileImage: data.profileImage,
+        introduction: data.introduction,
         updatedAt: new Date(),
       },
       create: {
         clerkUserId: userId,
-        firstName: data.firstName || "",
-        lastName: data.lastName || "",
+        name: data.name || "",
         email: data.email || "",
-        bio: data.bio || "",
-        profileImage: data.profileImage || "",
+        introduction: data.introduction || "",
+        interests: [],
       },
     });
 
@@ -63,7 +58,7 @@ export async function updateUserProfile(data: UpdateUserProfileData) {
 export async function getUserProfile() {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       throw new Error("User not authenticated");
     }
@@ -76,11 +71,10 @@ export async function getUserProfile() {
       select: {
         id: true,
         clerkUserId: true,
-        firstName: true,
-        lastName: true,
+        name: true,
         email: true,
-        bio: true,
-        profileImage: true,
+        introduction: true,
+        interests: true,
         createdAt: true,
         updatedAt: true,
       },
