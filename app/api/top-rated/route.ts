@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { PrismaClient } from '@/lib/generated/prisma';
+
+const prisma = new PrismaClient();
 
 export async function GET() {
   try {
@@ -12,27 +15,46 @@ export async function GET() {
       );
     }
 
-    // Call Python API to get top rated locations
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-    const response = await fetch(`${apiBaseUrl}/top-rated`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
+    console.log('🗺️ [Top Rated API] Fetching top rated locations from database...');
+
+    // Get top rated locations from database
+    const topRatedLocations = await prisma.location.findMany({
+      where: {
+        overallRating: {
+          gt: 0, // Only get locations with ratings
+        },
+      },
+      orderBy: {
+        overallRating: 'desc',
+      },
+      take: 6,
+      include: {
+        _count: {
+          select: {
+            feedbacks: true,
+          },
+        },
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status}`);
-    }
+    console.log('✅ [Top Rated API] Found locations:', topRatedLocations.length);
 
-    const topRatedLocations = await response.json();
+    // Transform to match the expected format
+    const formattedLocations = topRatedLocations.map(location => ({
+      Location_Name: location.name,
+      Located_City: location.locatedCity,
+      Location_Type: location.type,
+      Rating: location.overallRating,
+      Sentiment: 'Positive', // Default sentiment
+      Sentiment_Score: location.overallRating / 5, // Normalize to 0-1 range
+      reviewCount: location._count?.feedbacks || 0
+    }));
+
+    console.log('🎉 [Top Rated API] Returning formatted locations:', formattedLocations.length);
     
-    // Limit to top 6
-    const limitedLocations = topRatedLocations.slice(0, 6);
-    
-    return NextResponse.json(limitedLocations);
+    return NextResponse.json(formattedLocations);
   } catch (error) {
-    console.error('Error fetching top rated locations:', error);
+    console.error('❌ [Top Rated API] Error fetching top rated locations:', error);
     return NextResponse.json(
       { error: 'Failed to fetch top rated locations' },
       { status: 500 }

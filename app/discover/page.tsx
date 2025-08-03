@@ -26,21 +26,20 @@ import {
   Bookmark,
   BookmarkCheck,
   RefreshCw,
+  Brain,
+  Sparkles,
 } from "lucide-react";
 import { Navbar } from "../../components/landing/Navbar";
 import { Footer } from "../../components/landing/Footer";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-
-interface Recommendation {
-  Location_Name: string;
-  Located_City: string;
-  Location_Type: string;
-  Rating: number;
-  Sentiment: string;
-  Sentiment_Score: number;
-}
+import { 
+  getPersonalizedRecommendations, 
+  getFallbackRecommendations,
+  type PersonalizedRecommendation,
+  type PredictedInterest 
+} from "@/features/find-destinations/actions";
 
 interface WeatherForecast {
   date: string;
@@ -63,7 +62,8 @@ export default function FindDestinationsPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isWeatherLoading, setIsWeatherLoading] = useState(false);
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [recommendations, setRecommendations] = useState<PersonalizedRecommendation[]>([]);
+  const [predictedInterests, setPredictedInterests] = useState<PredictedInterest[]>([]);
   const [weatherData, setWeatherData] = useState<LocationWeather[]>([]);
   const [userInterests, setUserInterests] = useState<string[]>([]);
   const [hasInterests, setHasInterests] = useState(false);
@@ -75,6 +75,7 @@ export default function FindDestinationsPage() {
   );
   const [interestsLoading, setInterestsLoading] = useState(true);
   const [recommendationsFetched, setRecommendationsFetched] = useState(false);
+  const [usingPredictedInterests, setUsingPredictedInterests] = useState(false);
 
   const fetchUserInterests = useCallback(async () => {
     if (!user) return;
@@ -96,51 +97,41 @@ export default function FindDestinationsPage() {
   }, [user]);
 
   const fetchRecommendations = useCallback(async () => {
-    if (!hasInterests || isLoading || recommendationsFetched) return; // Prevent multiple calls and re-fetching
+    if (!hasInterests || isLoading || recommendationsFetched) return;
 
     setIsLoading(true);
     setIsWeatherLoading(true);
     try {
-      // Fetch recommendations
-      const response = await fetch("/api/recommendations", {
-        method: "POST",
+      // Get personalized recommendations (combines user interests + AI predictions)
+      console.log('🧠 [Discover] Getting combined recommendations...');
+      const personalizedData = await getPersonalizedRecommendations();
+      console.log('✅ [Discover] Combined recommendations successful:', {
+        recommendationsCount: personalizedData.recommendations.length,
+        predictedInterests: personalizedData.predictedInterests
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch recommendations");
-      }
-
-      const data = await response.json();
-      // The response is now directly an array of recommendations
-      const recs = Array.isArray(data) ? data : [];
-      setRecommendations(recs);
-      setRecommendationsFetched(true); // Mark as fetched
+      setRecommendations(personalizedData.recommendations);
+      setPredictedInterests(personalizedData.predictedInterests);
+      setUsingPredictedInterests(personalizedData.predictedInterests.length > 0);
+      setRecommendationsFetched(true);
 
       // Fetch weather data for the recommended locations
-      if (recs.length > 0) {
-        try {
-          const weatherResponse = await fetch("/api/weather", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              locations: recs.map((rec: Recommendation) => ({
-                Location_Name: rec.Location_Name,
-                Located_City: rec.Located_City,
-              })),
-            }),
-          });
-
-          if (weatherResponse.ok) {
-            const weatherData = await weatherResponse.json();
-            setWeatherData(weatherData.weatherData || []);
+      if (personalizedData.recommendations.length > 0) {
+        const weatherPromises = personalizedData.recommendations.map(async (location) => {
+          try {
+            const response = await fetch(`/api/weather?city=${encodeURIComponent(location.Located_City)}`);
+            if (response.ok) {
+              const weatherData = await response.json();
+              return { location: location.Location_Name, weather: weatherData };
+            }
+          } catch (error) {
+            console.error(`Error fetching weather for ${location.Located_City}:`, error);
           }
-        } catch (weatherError) {
-          console.error("Error fetching weather data:", weatherError);
-        } finally {
-          setIsWeatherLoading(false);
-        }
+          return null;
+        });
+
+        const weatherResults = await Promise.all(weatherPromises);
+        const validWeatherData = weatherResults.filter(Boolean);
+        setWeatherData(validWeatherData);
       } else {
         setIsWeatherLoading(false);
       }
@@ -191,7 +182,7 @@ export default function FindDestinationsPage() {
     }
   }, [user, fetchBookmarks]);
 
-  const handleBookmark = async (rec: Recommendation) => {
+  const handleBookmark = async (rec: PersonalizedRecommendation) => {
     if (!user) return;
 
     const locationKey = `${rec.Location_Name}-${rec.Located_City}`;
@@ -259,6 +250,7 @@ export default function FindDestinationsPage() {
   // Manual refresh function that resets cache
   const handleManualRefresh = useCallback(() => {
     setRecommendationsFetched(false);
+    setUsingPredictedInterests(false);
     fetchRecommendations();
   }, [fetchRecommendations]);
 
@@ -354,21 +346,58 @@ export default function FindDestinationsPage() {
                   <div className="flex items-center justify-center gap-3 mb-4">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-muted-foreground">
-                        Your interests:
+                        {usingPredictedInterests ? (
+                          <div className="flex items-center gap-2">
+                            <Brain className="h-4 w-4 text-purple-500" />
+                            <span>Your Interests & AI Predictions:</span>
+                          </div>
+                        ) : (
+                          "Your interests:"
+                        )}
                       </span>
-                      <div className="flex flex-wrap gap-1">
-                        {userInterests.slice(0, 3).map((interest, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-block bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full"
-                          >
-                            {interest}
-                          </span>
-                        ))}
-                        {userInterests.length > 3 && (
-                          <span className="inline-block bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
-                            +{userInterests.length - 3} more
-                          </span>
+                      <div className="flex flex-wrap gap-2">
+                        {/* User Interests */}
+                        {userInterests.length > 0 && (
+                          <>
+                            <span className="text-xs font-medium text-muted-foreground mr-1">Your:</span>
+                            {userInterests.slice(0, 2).map((interest, idx) => (
+                              <span
+                                key={`user-${idx}`}
+                                className="inline-block bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full"
+                              >
+                                {interest}
+                              </span>
+                            ))}
+                            {userInterests.length > 2 && (
+                              <span className="inline-block bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
+                                +{userInterests.length - 2}
+                              </span>
+                            )}
+                          </>
+                        )}
+
+                        {/* AI Predicted Interests */}
+                        {usingPredictedInterests && predictedInterests.length > 0 && (
+                          <>
+                            <span className="text-xs font-medium text-muted-foreground mr-1 ml-2">AI:</span>
+                            {predictedInterests.slice(0, 2).map((interest, idx) => (
+                              <span
+                                key={`ai-${idx}`}
+                                className="inline-block bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"
+                              >
+                                <Sparkles className="h-3 w-3" />
+                                {interest.location_type}
+                                <span className="text-xs opacity-75">
+                                  ({Math.round(interest.confidence * 100)}%)
+                                </span>
+                              </span>
+                            ))}
+                            {predictedInterests.length > 2 && (
+                              <span className="inline-block bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 text-xs font-medium px-2 py-1 rounded-full">
+                                +{predictedInterests.length - 2}
+                              </span>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
@@ -406,8 +435,25 @@ export default function FindDestinationsPage() {
                   <div className="flex items-center justify-center gap-2 py-4">
                     <Loader2 className="h-5 w-5 animate-spin text-primary" />
                     <span className="text-muted-foreground">
-                      Getting your personalized recommendations...
+                      {usingPredictedInterests 
+                        ? "Getting your AI-powered personalized recommendations..."
+                        : "Getting your personalized recommendations..."
+                      }
                     </span>
+                  </div>
+                )}
+
+                {usingPredictedInterests && predictedInterests.length > 0 && (
+                  <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Brain className="h-4 w-4 text-purple-600" />
+                      <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                        AI-Powered Recommendations
+                      </span>
+                    </div>
+                    <p className="text-xs text-purple-600 dark:text-purple-400">
+                      Based on your profile and preferences, our AI has predicted these location types would interest you most.
+                    </p>
                   </div>
                 )}
               </div>
@@ -449,6 +495,11 @@ export default function FindDestinationsPage() {
                           <span className="inline-block bg-secondary/50 text-secondary-foreground text-sm font-medium px-3 py-1 rounded-full capitalize">
                             {rec.Location_Type}
                           </span>
+                          {rec.reviewCount > 0 && (
+                            <span className="inline-block bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-xs font-medium px-2 py-1 rounded-full">
+                              {rec.reviewCount} reviews
+                            </span>
+                          )}
                         </div>
                         
                         {/* User sentiment feedback - more descriptive */}

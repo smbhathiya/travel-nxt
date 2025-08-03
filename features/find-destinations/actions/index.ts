@@ -4,4 +4,12 @@ export {
   getTopRatedLocationsWithMinFeedback,
   getTopRatedLocationsByCity,
   type TopRatedLocation 
-} from './getTopRatedLocations'; 
+} from './getTopRatedLocations';
+
+export {
+  getPersonalizedRecommendations,
+  getFallbackRecommendations,
+  type PersonalizedRecommendation,
+  type PredictedInterest,
+  type PersonalizedRecommendationsResponse
+} from './getPersonalizedRecommendations'; 

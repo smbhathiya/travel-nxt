@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@/lib/generated/prisma';
+
+const prisma = new PrismaClient();
 
 // Define the SimilarLocation type
 interface SimilarLocation {
@@ -26,67 +29,70 @@ export async function GET(
       );
     }
 
-    // Call Python API with timeout
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-    const encodedLocationName = encodeURIComponent(locationName);
-    
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
-    try {
-      const response = await fetch(`${apiBaseUrl}/similar-locations/${encodedLocationName}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        cache: 'no-store',
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeout);
+    console.log('🔍 [Similar Locations API] Looking for similar locations to:', locationName);
 
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Unknown error');
-        console.error(`API error (${response.status}): ${errorText}`);
-        
-        return NextResponse.json(
-          { error: `API request failed with status ${response.status}` },
-          { status: response.status }
-        );
+    // First, find the target location to get its type
+    const targetLocation = await prisma.location.findFirst({
+      where: {
+        name: {
+          contains: locationName,
+          mode: 'insensitive'
+        }
       }
+    });
 
-      const similarLocations = await response.json();
-      
-      // Validate response format
-      if (!Array.isArray(similarLocations)) {
-        console.error('Invalid API response format:', similarLocations);
-        return NextResponse.json(
-          { error: 'Invalid response format from API' },
-          { status: 500 }
-        );
-      }
-      
-      // Ensure data is sorted by similarity (highest first)
-      const sortedLocations = [...similarLocations].sort(
-        (a: SimilarLocation, b: SimilarLocation) => b.similarity - a.similarity
+    if (!targetLocation) {
+      console.log('❌ [Similar Locations API] Target location not found:', locationName);
+      return NextResponse.json(
+        { error: 'Location not found' },
+        { status: 404 }
       );
-      
-      return NextResponse.json(sortedLocations);
-    } catch (error) {
-      clearTimeout(timeout);
-      
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.error('API request timed out');
-        return NextResponse.json(
-          { error: 'API request timed out. Please try again.' },
-          { status: 504 }
-        );
-      }
-      
-      throw error; // Let the outer catch handle other errors
     }
+
+    console.log('✅ [Similar Locations API] Found target location:', targetLocation.name, 'Type:', targetLocation.type);
+
+    // Find similar locations based on the same type
+    const similarLocations = await prisma.location.findMany({
+      where: {
+        type: targetLocation.type,
+        name: {
+          not: targetLocation.name // Exclude the target location
+        },
+        overallRating: {
+          gt: 0
+        }
+      },
+      orderBy: {
+        overallRating: 'desc'
+      },
+      take: 6,
+      include: {
+        _count: {
+          select: {
+            feedbacks: true
+          }
+        }
+      }
+    });
+
+    console.log('🗺️ [Similar Locations API] Found similar locations:', similarLocations.length);
+
+    // Transform to match the expected format
+    const formattedSimilarLocations: SimilarLocation[] = similarLocations.map(location => ({
+      Location_Name: location.name,
+      Located_City: location.locatedCity,
+      Location_Type: location.type,
+      Rating: location.overallRating,
+      similarity: 0.8, // Default similarity score since we're using same type
+      Sentiment: 'Positive',
+      Sentiment_Score: location.overallRating / 5
+    }));
+
+    console.log('🎉 [Similar Locations API] Returning similar locations:', formattedSimilarLocations.length);
+    
+    return NextResponse.json(formattedSimilarLocations);
   } catch (error) {
-    console.error('Error fetching similar locations:', error);
+    console.error('❌ [Similar Locations API] Error fetching similar locations:', error);
     return NextResponse.json(
       { error: 'Failed to fetch similar locations. Please try again later.' },
       { status: 500 }

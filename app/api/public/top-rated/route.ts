@@ -1,42 +1,50 @@
 import { NextResponse } from 'next/server';
+import { PrismaClient } from '@/lib/generated/prisma';
+
+const prisma = new PrismaClient();
 
 export async function GET() {
-  // Call Python API to get top rated locations
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-  
-  // Add timeout to the fetch request
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-  
   try {
-    const response = await fetch(`${apiBaseUrl}/top-rated`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
+    console.log('🗺️ [Public Top Rated API] Fetching top rated locations from database...');
+
+    // Get top rated locations from database
+    const topRatedLocations = await prisma.location.findMany({
+      where: {
+        overallRating: {
+          gt: 0, // Only get locations with ratings
+        },
       },
-      signal: controller.signal,
-      // Ensure we get fresh data
-      cache: 'no-store',
+      orderBy: {
+        overallRating: 'desc',
+      },
+      take: 6,
+      include: {
+        _count: {
+          select: {
+            feedbacks: true,
+          },
+        },
+      },
     });
 
-    // Clear the timeout since we got a response
-    clearTimeout(timeoutId);
+    console.log('✅ [Public Top Rated API] Found locations:', topRatedLocations.length);
 
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status}`);
-    }
+    // Transform to match the expected format
+    const formattedLocations = topRatedLocations.map(location => ({
+      Location_Name: location.name,
+      Located_City: location.locatedCity,
+      Location_Type: location.type,
+      Rating: location.overallRating,
+      Sentiment: 'Positive', // Default sentiment
+      Sentiment_Score: location.overallRating / 5, // Normalize to 0-1 range
+      reviewCount: location._count?.feedbacks || 0
+    }));
 
-    const topRatedLocations = await response.json();
+    console.log('🎉 [Public Top Rated API] Returning formatted locations:', formattedLocations.length);
     
-    // Limit to top 6
-    const limitedLocations = topRatedLocations.slice(0, 6);
-    
-    return NextResponse.json(limitedLocations);
+    return NextResponse.json(formattedLocations);
   } catch (error) {
-    // Clear timeout if there was an error
-    clearTimeout(timeoutId);
-    
-    console.error('Error fetching top rated locations:', error);
+    console.error('❌ [Public Top Rated API] Error fetching top rated locations:', error);
     return NextResponse.json(
       { error: 'Failed to fetch top rated locations' },
       { status: 500 }

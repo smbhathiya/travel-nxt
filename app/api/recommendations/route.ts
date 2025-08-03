@@ -25,6 +25,8 @@ export async function POST() {
       );
     }
 
+    console.log('🔍 [Recommendations API] Getting user interests...');
+
     // Get user interests from database
     const user = await prisma.user.findUnique({
       where: { clerkUserId: userId },
@@ -37,68 +39,48 @@ export async function POST() {
       );
     }
 
-    // Call Python API with timeout
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-    
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
-    try {
-      const response = await fetch(`${apiBaseUrl}/by-interest`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    console.log('✅ [Recommendations API] User interests:', user.interests);
+
+    // Get locations from database based on user interests
+    const recommendedLocations = await prisma.location.findMany({
+      where: {
+        type: {
+          in: user.interests
         },
-        body: JSON.stringify({
-          interests: user.interests
-        }),
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeout);
+        overallRating: {
+          gt: 0
+        }
+      },
+      orderBy: {
+        overallRating: 'desc'
+      },
+      take: 6,
+      include: {
+        _count: {
+          select: {
+            feedbacks: true
+          }
+        }
+      }
+    });
 
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Unknown error');
-        console.error(`API error (${response.status}): ${errorText}`);
-        
-        return NextResponse.json(
-          { error: `API request failed with status ${response.status}` },
-          { status: response.status }
-        );
-      }
+    console.log('🗺️ [Recommendations API] Found locations:', recommendedLocations.length);
 
-      const recommendations = await response.json();
-      
-      // Validate response format
-      if (!Array.isArray(recommendations)) {
-        console.error('Invalid API response format:', recommendations);
-        return NextResponse.json(
-          { error: 'Invalid response format from API' },
-          { status: 500 }
-        );
-      }
-      
-      // Limit the results to 6 and ensure they're sorted by sentiment score
-      const limitedRecommendations = recommendations
-        .sort((a: Recommendation, b: Recommendation) => b.Sentiment_Score - a.Sentiment_Score)
-        .slice(0, 6);
-      
-      return NextResponse.json(limitedRecommendations);
-    } catch (error) {
-      clearTimeout(timeout);
-      
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.error('API request timed out');
-        return NextResponse.json(
-          { error: 'API request timed out. Please try again.' },
-          { status: 504 }
-        );
-      }
-      
-      throw error; // Let the outer catch handle other errors
-    }
+    // Transform to match the expected format
+    const formattedRecommendations: Recommendation[] = recommendedLocations.map(location => ({
+      Location_Name: location.name,
+      Located_City: location.locatedCity,
+      Location_Type: location.type,
+      Rating: location.overallRating,
+      Sentiment: 'Positive', // Default sentiment
+      Sentiment_Score: location.overallRating / 5, // Normalize to 0-1 range
+    }));
+
+    console.log('🎉 [Recommendations API] Returning recommendations:', formattedRecommendations.length);
+    
+    return NextResponse.json(formattedRecommendations);
   } catch (error) {
-    console.error('Error fetching recommendations:', error);
+    console.error('❌ [Recommendations API] Error fetching recommendations:', error);
     return NextResponse.json(
       { error: 'Failed to fetch recommendations. Please try again later.' },
       { status: 500 }

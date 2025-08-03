@@ -19,15 +19,12 @@ export function Hero() {
       {isSignedIn ? (
         <>
           <div className="space-y-6">
-            <div className="inline-flex items-center px-4 py-2 rounded-full  bg-primary/10 text-primary text-sm font-medium">
-              <Sparkles className="h-4 w-4 mr-2" />
-              Ready for your next adventure?
-            </div>
+
             <h1 className="text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl max-w-5xl">
               Explore <span className="text-primary">Sri Lanka</span>
             </h1>
             <p className="max-w-2xl mx-auto text-xl sm:text-2xl text-muted-foreground/80 leading-relaxed">
-              Discover personalized destinations crafted just for you
+              AI-Powered Travel Discovery for Sri Lanka
             </p>
           </div>
 
