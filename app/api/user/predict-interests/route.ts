@@ -186,7 +186,8 @@ export async function POST(request: NextRequest) {
       Rating: location.overallRating,
       Sentiment: 'Positive', // Default sentiment
       Sentiment_Score: location.overallRating / 5, // Normalize to 0-1 range
-      reviewCount: location._count?.feedbacks || 0
+      reviewCount: location._count?.feedbacks || 0,
+      imageUrl: location.unsplashImage || '' // Add image URL
     }));
 
     console.log('🎉 [API Route] Final response:', {

@@ -11,6 +11,7 @@ export interface PersonalizedRecommendation {
   Sentiment: string;
   Sentiment_Score: number;
   reviewCount: number;
+  imageUrl: string; // Add image URL field
 }
 
 export interface PredictedInterest {
@@ -165,7 +166,8 @@ export async function getPersonalizedRecommendations(): Promise<PersonalizedReco
       Rating: location.overallRating,
       Sentiment: 'Positive', // Default sentiment
       Sentiment_Score: location.overallRating / 5, // Normalize to 0-1 range
-      reviewCount: location._count?.feedbacks || 0
+      reviewCount: location._count?.feedbacks || 0,
+      imageUrl: location.unsplashImage || '' // Add image URL
     }));
 
     console.log('🎉 [AI Prediction] Final formatted recommendations:', formattedRecommendations);

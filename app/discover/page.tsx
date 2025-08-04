@@ -585,13 +585,29 @@ export default function FindDestinationsPage() {
                         whileTap={{ scale: 0.98 }}
                       >
                                                  <Card className="overflow-hidden bg-card backdrop-blur-xl border border-border hover:border-border/60 transition-all duration-300 h-full group">
-                           <CardContent className="p-0">
-                             {/* Card Header with Image Placeholder */}
-                             <div className="relative h-48 bg-primary/10 overflow-hidden">
-                               <motion.div
-                                 className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                 whileHover={{ scale: 1.1 }}
-                               />
+                          <CardContent className="p-0">
+                            {/* Card Header with Image */}
+                            <div className="relative h-48 bg-primary/10 overflow-hidden">
+                              {rec.imageUrl ? (
+                                <img
+                                  src={rec.imageUrl}
+                                  alt={rec.Location_Name}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                                  <motion.div
+                                    className="text-primary/60"
+                                    whileHover={{ scale: 1.1, rotate: 5 }}
+                                  >
+                                    {getLocationIcon(rec.Location_Type)}
+                                  </motion.div>
+                                </div>
+                              )}
+                              <motion.div
+                                className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                whileHover={{ scale: 1.1 }}
+                              />
                               <div className="absolute top-4 right-4">
                                 <motion.div 
                                   className="flex items-center gap-1 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full"
@@ -603,14 +619,14 @@ export default function FindDestinationsPage() {
                                   </span>
                                 </motion.div>
                               </div>
-                                                             <div className="absolute bottom-4 left-4">
-                                 <motion.div
-                                   className="inline-flex items-center justify-center w-12 h-12 bg-background/80 backdrop-blur-sm rounded-2xl"
-                                   whileHover={{ scale: 1.1, rotate: 5 }}
-                                 >
-                                   {getLocationIcon(rec.Location_Type)}
-                                 </motion.div>
-                               </div>
+                              <div className="absolute bottom-4 left-4">
+                                <motion.div
+                                  className="inline-flex items-center justify-center w-12 h-12 bg-background/80 backdrop-blur-sm rounded-2xl"
+                                  whileHover={{ scale: 1.1, rotate: 5 }}
+                                >
+                                  {getLocationIcon(rec.Location_Type)}
+                                </motion.div>
+                              </div>
                             </div>
 
                             <div className="p-6">
