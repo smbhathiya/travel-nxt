@@ -12,28 +12,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { clerkUserId, interests } = await request.json();
+    const { interests } = await request.json();
 
-    if (userId !== clerkUserId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    // Only update interests for existing users
-    const user = await prisma.user.findUnique({ where: { clerkUserId } });
-
-    if (!user) {
+    if (!interests || !Array.isArray(interests)) {
       return NextResponse.json(
-        { error: "User does not exist" },
-        { status: 404 }
+        { error: "Invalid interests data" },
+        { status: 400 }
       );
     }
 
-    const updatedUser = await prisma.user.update({
-      where: { clerkUserId },
-      data: { interests },
-    });
+    // Find or create user
+    let user = await prisma.user.findUnique({ where: { clerkUserId: userId } });
 
-    return NextResponse.json({ success: true, user: updatedUser });
+    if (!user) {
+      // Create new user if doesn't exist
+      user = await prisma.user.create({
+        data: {
+          clerkUserId: userId,
+          name: "",
+          email: "",
+          introduction: "",
+          interests: interests,
+        },
+      });
+    } else {
+      // Update existing user's interests
+      user = await prisma.user.update({
+        where: { clerkUserId: userId },
+        data: { interests },
+      });
+    }
+
+    return NextResponse.json({ success: true, user });
   } catch (error) {
     console.error("Error saving user interests:", error);
     return NextResponse.json(
