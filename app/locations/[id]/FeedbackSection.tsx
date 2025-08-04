@@ -139,8 +139,16 @@ export function FeedbackSection({ locationId, userId }: FeedbackSectionProps) {
                     {/* Removed sentiment label here */}
                     {typeof fb.rating === 'number' && (
                       <span className="flex items-center gap-1 ml-2">
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                        {fb.rating}
+                        {[...Array(5)].map((_, index) => (
+                          <Star
+                            key={index}
+                            className={`h-4 w-4 ${
+                              index < fb.rating! 
+                                ? 'text-yellow-500 fill-yellow-500' 
+                                : 'text-gray-300'
+                            }`}
+                          />
+                        ))}
                       </span>
                     )}
                   </div>
