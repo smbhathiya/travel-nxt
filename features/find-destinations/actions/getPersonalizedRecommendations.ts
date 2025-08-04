@@ -132,14 +132,13 @@ export async function getPersonalizedRecommendations(): Promise<PersonalizedReco
       where: {
         type: {
           in: allLocationTypes
-        },
-        overallRating: {
-          gt: 0
         }
+        // Removed overallRating filter to show all matching locations
       },
-      orderBy: {
-        overallRating: 'desc'
-      },
+      orderBy: [
+        { overallRating: 'desc' },  // Rated locations first
+        { name: 'asc' }             // Then alphabetically
+      ],
       take: 8, // Increased to accommodate more interests
       include: {
         _count: {
