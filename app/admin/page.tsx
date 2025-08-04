@@ -87,13 +87,12 @@ export default function AdminPage() {
     { id: "farms", name: "Farms", icon: <TreePine className="h-4 w-4" /> },
     { id: "gardens", name: "Gardens", icon: <Flower2 className="h-4 w-4" /> },
     { id: "historic sites", name: "Historic Sites", icon: <Landmark className="h-4 w-4" /> },
-    { id: "mountains", name: "Mountains", icon: <Mountain className="h-4 w-4" /> },
     { id: "museums", name: "Museums", icon: <Building2 className="h-4 w-4" /> },
-    { id: "natural attractions", name: "Natural Attractions", icon: <Trees className="h-4 w-4" /> },
+    { id: "national parks", name: "National Parks", icon: <Trees className="h-4 w-4" /> },
     { id: "nature & wildlife areas", name: "Nature & Wildlife Areas", icon: <Trees className="h-4 w-4" /> },
-    { id: "parks", name: "Parks", icon: <TreePine className="h-4 w-4" /> },
+    { id: "waterfalls", name: "Waterfalls", icon: <Waves className="h-4 w-4" /> },
+    { id: "zoological gardens", name: "Zoological Gardens", icon: <Fish className="h-4 w-4" /> },
     { id: "religious sites", name: "Religious Sites", icon: <Church className="h-4 w-4" /> },
-    { id: "scenic lookouts", name: "Scenic Lookouts", icon: <Camera className="h-4 w-4" /> },
   ];
 
   useEffect(() => {

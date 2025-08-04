@@ -152,7 +152,7 @@ export function FeedbackSection({ locationId, userId }: FeedbackSectionProps) {
                       </span>
                     )}
                   </div>
-                  <div className="text-muted-foreground mb-1 text-xs">Confidence: {fb.confidence?.toFixed(2)}</div>
+                  {/* <div className="text-muted-foreground mb-1 text-xs">Confidence: {fb.confidence?.toFixed(2)}</div> */}
                   <div>{fb.comment}</div>
                 </CardContent>
               </Card>

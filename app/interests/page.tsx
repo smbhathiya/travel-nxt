@@ -113,18 +113,13 @@ export default function InterestsPage() {
       icon: <Landmark className="h-8 w-8" />,
     },
     {
-      id: "mountains",
-      name: "Mountains",
-      icon: <Mountain className="h-8 w-8" />,
-    },
-    {
       id: "museums",
       name: "Museums",
       icon: <Building2 className="h-8 w-8" />,
     },
     {
-      id: "natural attractions",
-      name: "Natural Attractions",
+      id: "national parks",
+      name: "National Parks",
       icon: <Trees className="h-8 w-8" />,
     },
     {
@@ -133,19 +128,19 @@ export default function InterestsPage() {
       icon: <Trees className="h-8 w-8" />,
     },
     {
-      id: "parks",
-      name: "Parks",
-      icon: <TreePine className="h-8 w-8" />,
+      id: "waterfalls",
+      name: "Waterfalls",
+      icon: <Waves className="h-8 w-8" />,
+    },
+    {
+      id: "zoological gardens",
+      name: "Zoological Gardens",
+      icon: <Fish className="h-8 w-8" />,
     },
     {
       id: "religious sites",
       name: "Religious Sites",
       icon: <Church className="h-8 w-8" />,
-    },
-    {
-      id: "scenic lookouts",
-      name: "Scenic Lookouts",
-      icon: <Camera className="h-8 w-8" />,
     },
   ];
 
