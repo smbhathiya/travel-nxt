@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@clerk/nextjs";
 import { 
   MapPin, 
   Star, 
@@ -28,15 +29,22 @@ interface TopRatedLocation {
 }
 
 export function LandingTopRated() {
+  const { isSignedIn } = useAuth();
   const [locations, setLocations] = useState<TopRatedLocation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Only fetch data if user is signed in
+    if (!isSignedIn) {
+      setIsLoading(false);
+      return;
+    }
+
     const fetchTopRated = async (retryCount = 0, maxRetries = 3) => {
       try {
         setIsLoading(true);
-        // Use our internal API endpoint that doesn't require authentication
-        const response = await fetch('/api/public/top-rated');
+        // Use the authenticated API endpoint
+        const response = await fetch('/api/top-rated');
         
         if (!response.ok) {
           if (retryCount < maxRetries) {
@@ -70,7 +78,7 @@ export function LandingTopRated() {
     };
 
     fetchTopRated();
-  }, []);
+  }, [isSignedIn]);
 
   // Function to get icon based on location type
   const getLocationIcon = (locationType: string) => {
@@ -103,8 +111,14 @@ export function LandingTopRated() {
     }
   };
 
+  // Don't show anything if user is not signed in
+  if (!isSignedIn) {
+    return null;
+  }
+
+  // Don't show anything if there's an error or no data
   if (locations.length === 0 && !isLoading) {
-    return null; // Don't show anything if there's an error or no data
+    return null;
   }
 
   return (
