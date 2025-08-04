@@ -65,9 +65,13 @@ export default function AdminPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const [showEditTypeDropdown, setShowEditTypeDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const editDropdownRef = useRef<HTMLDivElement>(null);
   const [newLocation, setNewLocation] = useState<NewLocation>({
     name: "",
     type: "",
@@ -86,6 +90,7 @@ export default function AdminPage() {
     { id: "mountains", name: "Mountains", icon: <Mountain className="h-4 w-4" /> },
     { id: "museums", name: "Museums", icon: <Building2 className="h-4 w-4" /> },
     { id: "natural attractions", name: "Natural Attractions", icon: <Trees className="h-4 w-4" /> },
+    { id: "nature & wildlife areas", name: "Nature & Wildlife Areas", icon: <Trees className="h-4 w-4" /> },
     { id: "parks", name: "Parks", icon: <TreePine className="h-4 w-4" /> },
     { id: "religious sites", name: "Religious Sites", icon: <Church className="h-4 w-4" /> },
     { id: "scenic lookouts", name: "Scenic Lookouts", icon: <Camera className="h-4 w-4" /> },
@@ -99,6 +104,9 @@ export default function AdminPage() {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowTypeDropdown(false);
+      }
+      if (editDropdownRef.current && !editDropdownRef.current.contains(event.target as Node)) {
+        setShowEditTypeDropdown(false);
       }
     };
 
@@ -173,6 +181,64 @@ export default function AdminPage() {
     }
   };
 
+  const handleEditLocation = async () => {
+    if (!editingLocation || !editingLocation.name || !editingLocation.type || !editingLocation.locatedCity || !editingLocation.about) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/locations/${editingLocation.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: editingLocation.name,
+          type: editingLocation.type,
+          locatedCity: editingLocation.locatedCity,
+          about: editingLocation.about,
+          unsplashImage: editingLocation.unsplashImage,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Location updated successfully",
+        });
+        setEditingLocation(null);
+        setIsEditing(false);
+        fetchLocations();
+      } else {
+        throw new Error('Failed to update location');
+      }
+    } catch (error) {
+      console.error('Error updating location:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update location",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const startEditing = (location: Location) => {
+    setEditingLocation(location);
+    setIsEditing(true);
+    setIsAdding(false);
+  };
+
+  const cancelEditing = () => {
+    setEditingLocation(null);
+    setIsEditing(false);
+    setShowEditTypeDropdown(false);
+  };
+
   const handleDeleteLocation = async (id: string) => {
     if (!confirm('Are you sure you want to delete this location?')) return;
 
@@ -211,6 +277,13 @@ export default function AdminPage() {
   const handleTypeSelect = (type: string) => {
     setNewLocation({ ...newLocation, type });
     setShowTypeDropdown(false);
+  };
+
+  const handleEditTypeSelect = (type: string) => {
+    if (editingLocation) {
+      setEditingLocation({ ...editingLocation, type });
+    }
+    setShowEditTypeDropdown(false);
   };
 
   const getTypeIcon = (typeName: string) => {
@@ -388,6 +461,125 @@ export default function AdminPage() {
                 </CardContent>
               </Card>
 
+              {/* Edit Location */}
+              {isEditing && editingLocation && (
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Edit className="h-5 w-5" />
+                      Edit Location
+                    </CardTitle>
+                    <CardDescription>
+                      Update location details
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Location Name *</label>
+                        <Input
+                          value={editingLocation.name}
+                          onChange={(e) => setEditingLocation({ ...editingLocation, name: e.target.value })}
+                          placeholder="Enter location name"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Type *</label>
+                        <div className="relative" ref={editDropdownRef}>
+                          <button
+                            type="button"
+                            onClick={() => setShowEditTypeDropdown(!showEditTypeDropdown)}
+                            className="w-full flex items-center justify-between px-3 py-2 border border-input bg-background rounded-md text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <span className={editingLocation.type ? "text-foreground" : "text-muted-foreground"}>
+                              {editingLocation.type || "Select location type"}
+                            </span>
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          </button>
+                          
+                          {showEditTypeDropdown && (
+                            <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-auto">
+                              <div className="p-1">
+                                {predefinedLocationTypes.map((type) => (
+                                  <button
+                                    key={type.id}
+                                    type="button"
+                                    onClick={() => handleEditTypeSelect(type.name)}
+                                    className="w-full text-left px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex items-center gap-2"
+                                  >
+                                    {type.icon}
+                                    {type.name}
+                                  </button>
+                                ))}
+                                <Separator className="my-1" />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingLocation({ ...editingLocation, type: "" });
+                                    setShowEditTypeDropdown(false);
+                                  }}
+                                  className="w-full text-left px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-muted-foreground"
+                                >
+                                  Clear selection
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {predefinedLocationTypes.length} predefined types available
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">City *</label>
+                        <Input
+                          value={editingLocation.locatedCity}
+                          onChange={(e) => setEditingLocation({ ...editingLocation, locatedCity: e.target.value })}
+                          placeholder="Enter city name"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Description *</label>
+                        <Textarea
+                          value={editingLocation.about}
+                          onChange={(e) => setEditingLocation({ ...editingLocation, about: e.target.value })}
+                          placeholder="Describe the location..."
+                          rows={3}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Image URL</label>
+                        <Input
+                          value={editingLocation.unsplashImage}
+                          onChange={(e) => setEditingLocation({ ...editingLocation, unsplashImage: e.target.value })}
+                          placeholder="Unsplash image URL"
+                        />
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handleEditLocation}
+                          className="flex-1"
+                        >
+                          <Save className="h-4 w-4 mr-2" />
+                          Update
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={cancelEditing}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Statistics */}
               <Card className="mt-6">
                 <CardHeader>
@@ -530,6 +722,13 @@ export default function AdminPage() {
                                     onClick={() => window.open(`/locations/${location.id}`, '_blank')}
                                   >
                                     <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => startEditing(location)}
+                                  >
+                                    <Edit className="h-4 w-4" />
                                   </Button>
                                   <Button
                                     variant="outline"

@@ -128,6 +128,11 @@ export default function InterestsPage() {
       icon: <Trees className="h-8 w-8" />,
     },
     {
+      id: "nature & wildlife areas",
+      name: "Nature & Wildlife Areas",
+      icon: <Trees className="h-8 w-8" />,
+    },
+    {
       id: "parks",
       name: "Parks",
       icon: <TreePine className="h-8 w-8" />,
