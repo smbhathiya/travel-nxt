@@ -11,13 +11,15 @@ export interface PersonalizedRecommendation {
   Sentiment: string;
   Sentiment_Score: number;
   reviewCount: number;
-  imageUrl: string; // Add image URL field
+  imageUrl: string;
 }
 
 export interface PredictedInterest {
   location_type: string;
   confidence: number;
 }
+
+type RawInterestData = [string, number];
 
 export interface PersonalizedRecommendationsResponse {
   recommendations: PersonalizedRecommendation[];
@@ -62,7 +64,6 @@ export async function getPersonalizedRecommendations(): Promise<PersonalizedReco
     // Initialize with user's existing interests
     let allLocationTypes = [...(user.interests || [])];
     let predictedInterests: PredictedInterest[] = [];
-    let usingPredictedInterests = false;
 
     // Try to get AI predictions
     try {
@@ -92,25 +93,24 @@ export async function getPersonalizedRecommendations(): Promise<PersonalizedReco
 
           // Extract location types from predictions
           // FastAPI returns: [['location_type', confidence], ['location_type', confidence], ...]
-          const predictedLocationTypes = predictionData.top_interests
-            .filter((interest: any) => Array.isArray(interest) && interest.length >= 2)
-            .map((interest: any) => interest[0]); // Get the location_type (first element)
+          const predictedLocationTypes: string[] = predictionData.top_interests
+            .filter((interest: RawInterestData) => Array.isArray(interest) && interest.length >= 2)
+            .map((interest: RawInterestData) => interest[0]); // Get the location_type (first element)
 
           console.log('📍 [AI Prediction] AI predicted location types:', predictedLocationTypes);
 
           // Combine user interests with AI predictions (avoid duplicates)
-          const newTypes = predictedLocationTypes.filter(type => !allLocationTypes.includes(type));
+          const newTypes = predictedLocationTypes.filter((type: string) => !allLocationTypes.includes(type));
           allLocationTypes = [...allLocationTypes, ...newTypes];
 
           // Transform predicted interests to match expected format
           predictedInterests = predictionData.top_interests
-            .filter((interest: any) => Array.isArray(interest) && interest.length >= 2)
-            .map((interest: any) => ({
+            .filter((interest: RawInterestData) => Array.isArray(interest) && interest.length >= 2)
+            .map((interest: RawInterestData) => ({
               location_type: interest[0],
               confidence: interest[1]
             }));
 
-          usingPredictedInterests = true;
           console.log('🎉 [AI Prediction] Combined location types:', allLocationTypes);
         }
       } else {

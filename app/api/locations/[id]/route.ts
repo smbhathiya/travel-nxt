@@ -4,10 +4,10 @@ import { prisma } from "@/lib/prisma";
 // DELETE - Delete a location by ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Check if location exists
     const existingLocation = await prisma.location.findUnique({
@@ -42,10 +42,10 @@ export async function DELETE(
 // PUT - Update a location by ID
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { name, type, locatedCity, about, unsplashImage } = body;
 

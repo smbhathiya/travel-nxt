@@ -99,21 +99,18 @@ export async function getTopRatedLocationsWithMinFeedback(
       throw new Error('Unauthorized');
     }
 
-    const topRatedLocations = await prisma.location.findMany({
+    const allTopRatedLocations = await prisma.location.findMany({
       where: {
         overallRating: {
           gt: 0,
         },
         feedbacks: {
-          _count: {
-            gte: minFeedbackCount,
-          },
+          some: {},
         },
       },
       orderBy: {
         overallRating: 'desc',
       },
-      take: limit,
       include: {
         _count: {
           select: {
@@ -122,6 +119,11 @@ export async function getTopRatedLocationsWithMinFeedback(
         },
       },
     });
+
+    // Filter by minimum feedback count and apply limit
+    const topRatedLocations = allTopRatedLocations
+      .filter(location => (location._count?.feedbacks || 0) >= minFeedbackCount)
+      .slice(0, limit);
 
     return topRatedLocations;
   } catch (error) {

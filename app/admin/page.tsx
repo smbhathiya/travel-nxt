@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -127,10 +127,6 @@ export default function AdminPage() {
   ];
 
   useEffect(() => {
-    fetchLocations();
-  }, []);
-
-  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -152,7 +148,7 @@ export default function AdminPage() {
     };
   }, []);
 
-  const fetchLocations = async () => {
+  const fetchLocations = useCallback(async () => {
     try {
       const response = await fetch("/api/locations");
       if (response.ok) {
@@ -169,7 +165,11 @@ export default function AdminPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast, setLocations, setIsLoading]);
+
+  useEffect(() => {
+    fetchLocations();
+  }, [fetchLocations]);
 
   const handleAddLocation = async () => {
     if (
