@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, Quote, User, MapPin, Heart } from "lucide-react";
+import { Star, Quote, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
@@ -93,23 +93,23 @@ export function Testimonials() {
         animate={isInView ? "visible" : "hidden"}
         className="text-center mb-20"
       >
-
-        <motion.h2 
+        <motion.h2
           className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground"
           variants={itemVariants}
         >
           Real Stories, Real Adventures
         </motion.h2>
-        
-        <motion.p 
+
+        <motion.p
           className="text-xl sm:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed"
           variants={itemVariants}
         >
-          Discover how TravelNxt has helped thousands of travelers create unforgettable experiences in Sri Lanka
+          Discover how TravelNxt has helped thousands of travelers create
+          unforgettable experiences in Sri Lanka
         </motion.p>
       </motion.div>
 
-      <motion.div 
+      <motion.div
         className="grid grid-cols-1 md:grid-cols-2 gap-8"
         variants={containerVariants}
         initial="hidden"
@@ -119,94 +119,108 @@ export function Testimonials() {
           <motion.div
             key={idx}
             variants={cardVariants}
-            whileHover={{ 
-              scale: 1.02, 
+            whileHover={{
+              scale: 1.02,
               y: -5,
-              transition: { duration: 0.3, ease: "easeOut" as const }
+              transition: { duration: 0.3, ease: "easeOut" as const },
             }}
             whileTap={{ scale: 0.98 }}
             className="group relative"
           >
             <div className="relative bg-white/5 backdrop-blur-sm p-8 h-full border border-white/10 hover:border-white/20 transition-all duration-300 rounded-2xl overflow-hidden">
               {/* Gradient background on hover */}
-              <motion.div 
+              <motion.div
                 className={`absolute inset-0 bg-gradient-to-br ${testimonial.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}
                 initial={{ opacity: 0 }}
                 whileHover={{ opacity: 0.05 }}
               />
-              
+
               {/* Quote Icon */}
-              <motion.div 
+              <motion.div
                 className="absolute top-6 right-6 text-muted-foreground/30"
                 initial={{ opacity: 0, scale: 0 }}
-                animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
-                transition={{ 
+                animate={
+                  isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }
+                }
+                transition={{
                   delay: 0.5 + idx * 0.1,
                   type: "spring",
                   stiffness: 200,
-                  damping: 10
+                  damping: 10,
                 }}
               >
                 <Quote className="h-8 w-8" />
               </motion.div>
-              
+
               {/* Rating */}
               <div className="flex items-center gap-1 mb-6">
                 {Array.from({ length: testimonial.rating }).map((_, i) => (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, scale: 0 }}
-                    animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
-                    transition={{ 
+                    animate={
+                      isInView
+                        ? { opacity: 1, scale: 1 }
+                        : { opacity: 0, scale: 0 }
+                    }
+                    transition={{
                       delay: 0.6 + idx * 0.1 + i * 0.1,
                       type: "spring",
                       stiffness: 200,
-                      damping: 10
+                      damping: 10,
                     }}
                   >
                     <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                   </motion.div>
                 ))}
               </div>
-              
+
               {/* Testimonial Text */}
-              <motion.p 
+              <motion.p
                 className="text-muted-foreground leading-relaxed mb-6 text-lg"
                 variants={itemVariants}
               >
-                "{testimonial.text}"
+                &quot;{testimonial.text}&quot;
               </motion.p>
 
               {/* Destination */}
               <motion.div
                 className="flex items-center gap-2 mb-6 text-sm text-primary/80"
                 initial={{ opacity: 0, x: -20 }}
-                animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
-                transition={{ 
+                animate={
+                  isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }
+                }
+                transition={{
                   delay: 0.7 + idx * 0.1,
                   duration: 0.5,
-                  ease: "easeOut" as const
+                  ease: "easeOut" as const,
                 }}
               >
                 <MapPin className="h-4 w-4" />
-                <span className="font-medium">Visited: {testimonial.destination}</span>
+                <span className="font-medium">
+                  Visited: {testimonial.destination}
+                </span>
               </motion.div>
-              
+
               {/* Author */}
               <div className="flex items-center gap-4">
-                <motion.div 
+                <motion.div
                   className={`w-12 h-12 bg-gradient-to-br ${testimonial.gradient} text-white rounded-full flex items-center justify-center font-semibold`}
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.1,
                     rotate: 5,
-                    transition: { duration: 0.3, ease: "easeOut" as const }
+                    transition: { duration: 0.3, ease: "easeOut" as const },
                   }}
                 >
                   {testimonial.avatar}
                 </motion.div>
                 <div>
-                  <div className="font-semibold text-foreground">{testimonial.name}</div>
-                  <div className="text-sm text-muted-foreground">{testimonial.location}</div>
+                  <div className="font-semibold text-foreground">
+                    {testimonial.name}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {testimonial.location}
+                  </div>
                 </div>
               </div>
             </div>
@@ -220,9 +234,7 @@ export function Testimonials() {
         variants={itemVariants}
         initial="hidden"
         animate={isInView ? "visible" : "hidden"}
-      >
-
-      </motion.div>
+      ></motion.div>
     </div>
   );
 }

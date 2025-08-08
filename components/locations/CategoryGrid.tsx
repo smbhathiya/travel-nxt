@@ -98,7 +98,7 @@ export default function CategoryGrid() {
       initial="hidden"
       animate="visible"
     >
-      {categories.map((category, index) => (
+      {categories.map((category) => (
         <motion.div
           key={category.type}
           variants={cardVariants}

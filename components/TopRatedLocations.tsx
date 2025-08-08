@@ -16,7 +16,8 @@ import {
   Fish, 
   Camera 
 } from "lucide-react";
-import { getTopRatedLocations, type TopRatedLocation } from "@/features/find-destinations/actions";
+import { getTopRatedLocations } from "@/features/find-destinations/actions";
+import { type TopRatedLocation } from "@/features/find-destinations/actions/getTopRatedLocations";
 
 interface TopRatedLocationsProps {
   className?: string;
@@ -104,7 +105,7 @@ export function TopRatedLocations({ className = "" }: TopRatedLocationsProps) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {locations.map((location, index) => (
+          {locations.map((location) => (
             <Card
               key={location.id}
               className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:bg-accent/50"
