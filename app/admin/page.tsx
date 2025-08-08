@@ -5,18 +5,22 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
-import { 
-  Plus, 
-  Search, 
-  MapPin, 
-  Star, 
+import {
+  Plus,
+  Search,
+  MapPin,
+  Star,
   Image as ImageIcon,
-  FileText,
-  Globe,
   Building,
   Eye,
   Edit,
@@ -29,12 +33,11 @@ import {
   TreePine,
   Flower2,
   Landmark,
-  Mountain,
   Building2,
   Trees,
   Church,
-  Camera
 } from "lucide-react";
+import Image from "next/image";
 
 interface Location {
   id: string;
@@ -83,16 +86,44 @@ export default function AdminPage() {
   // Predefined location types from interests page
   const predefinedLocationTypes: LocationType[] = [
     { id: "beaches", name: "Beaches", icon: <Waves className="h-4 w-4" /> },
-    { id: "bodies of water", name: "Bodies of Water", icon: <Fish className="h-4 w-4" /> },
+    {
+      id: "bodies of water",
+      name: "Bodies of Water",
+      icon: <Fish className="h-4 w-4" />,
+    },
     { id: "farms", name: "Farms", icon: <TreePine className="h-4 w-4" /> },
     { id: "gardens", name: "Gardens", icon: <Flower2 className="h-4 w-4" /> },
-    { id: "historic sites", name: "Historic Sites", icon: <Landmark className="h-4 w-4" /> },
+    {
+      id: "historic sites",
+      name: "Historic Sites",
+      icon: <Landmark className="h-4 w-4" />,
+    },
     { id: "museums", name: "Museums", icon: <Building2 className="h-4 w-4" /> },
-    { id: "national parks", name: "National Parks", icon: <Trees className="h-4 w-4" /> },
-    { id: "nature & wildlife areas", name: "Nature & Wildlife Areas", icon: <Trees className="h-4 w-4" /> },
-    { id: "waterfalls", name: "Waterfalls", icon: <Waves className="h-4 w-4" /> },
-    { id: "zoological gardens", name: "Zoological Gardens", icon: <Fish className="h-4 w-4" /> },
-    { id: "religious sites", name: "Religious Sites", icon: <Church className="h-4 w-4" /> },
+    {
+      id: "national parks",
+      name: "National Parks",
+      icon: <Trees className="h-4 w-4" />,
+    },
+    {
+      id: "nature & wildlife areas",
+      name: "Nature & Wildlife Areas",
+      icon: <Trees className="h-4 w-4" />,
+    },
+    {
+      id: "waterfalls",
+      name: "Waterfalls",
+      icon: <Waves className="h-4 w-4" />,
+    },
+    {
+      id: "zoological gardens",
+      name: "Zoological Gardens",
+      icon: <Fish className="h-4 w-4" />,
+    },
+    {
+      id: "religious sites",
+      name: "Religious Sites",
+      icon: <Church className="h-4 w-4" />,
+    },
   ];
 
   useEffect(() => {
@@ -101,29 +132,35 @@ export default function AdminPage() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowTypeDropdown(false);
       }
-      if (editDropdownRef.current && !editDropdownRef.current.contains(event.target as Node)) {
+      if (
+        editDropdownRef.current &&
+        !editDropdownRef.current.contains(event.target as Node)
+      ) {
         setShowEditTypeDropdown(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   const fetchLocations = async () => {
     try {
-      const response = await fetch('/api/locations');
+      const response = await fetch("/api/locations");
       if (response.ok) {
         const data = await response.json();
         setLocations(data);
       }
     } catch (error) {
-      console.error('Error fetching locations:', error);
+      console.error("Error fetching locations:", error);
       toast({
         title: "Error",
         description: "Failed to fetch locations",
@@ -135,7 +172,12 @@ export default function AdminPage() {
   };
 
   const handleAddLocation = async () => {
-    if (!newLocation.name || !newLocation.type || !newLocation.locatedCity || !newLocation.about) {
+    if (
+      !newLocation.name ||
+      !newLocation.type ||
+      !newLocation.locatedCity ||
+      !newLocation.about
+    ) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields",
@@ -145,10 +187,10 @@ export default function AdminPage() {
     }
 
     try {
-      const response = await fetch('/api/locations', {
-        method: 'POST',
+      const response = await fetch("/api/locations", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(newLocation),
       });
@@ -168,10 +210,10 @@ export default function AdminPage() {
         setIsAdding(false);
         fetchLocations();
       } else {
-        throw new Error('Failed to add location');
+        throw new Error("Failed to add location");
       }
     } catch (error) {
-      console.error('Error adding location:', error);
+      console.error("Error adding location:", error);
       toast({
         title: "Error",
         description: "Failed to add location",
@@ -181,7 +223,13 @@ export default function AdminPage() {
   };
 
   const handleEditLocation = async () => {
-    if (!editingLocation || !editingLocation.name || !editingLocation.type || !editingLocation.locatedCity || !editingLocation.about) {
+    if (
+      !editingLocation ||
+      !editingLocation.name ||
+      !editingLocation.type ||
+      !editingLocation.locatedCity ||
+      !editingLocation.about
+    ) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields",
@@ -192,9 +240,9 @@ export default function AdminPage() {
 
     try {
       const response = await fetch(`/api/locations/${editingLocation.id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: editingLocation.name,
@@ -214,10 +262,10 @@ export default function AdminPage() {
         setIsEditing(false);
         fetchLocations();
       } else {
-        throw new Error('Failed to update location');
+        throw new Error("Failed to update location");
       }
     } catch (error) {
-      console.error('Error updating location:', error);
+      console.error("Error updating location:", error);
       toast({
         title: "Error",
         description: "Failed to update location",
@@ -239,11 +287,11 @@ export default function AdminPage() {
   };
 
   const handleDeleteLocation = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this location?')) return;
+    if (!confirm("Are you sure you want to delete this location?")) return;
 
     try {
       const response = await fetch(`/api/locations/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (response.ok) {
@@ -253,10 +301,10 @@ export default function AdminPage() {
         });
         fetchLocations();
       } else {
-        throw new Error('Failed to delete location');
+        throw new Error("Failed to delete location");
       }
     } catch (error) {
-      console.error('Error deleting location:', error);
+      console.error("Error deleting location:", error);
       toast({
         title: "Error",
         description: "Failed to delete location",
@@ -265,13 +313,16 @@ export default function AdminPage() {
     }
   };
 
-  const filteredLocations = locations.filter(location =>
-    location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    location.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    location.locatedCity.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredLocations = locations.filter(
+    (location) =>
+      location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      location.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      location.locatedCity.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const locationTypes = Array.from(new Set(locations.map(l => l.type))).sort();
+  const locationTypes = Array.from(
+    new Set(locations.map((l) => l.type))
+  ).sort();
 
   const handleTypeSelect = (type: string) => {
     setNewLocation({ ...newLocation, type });
@@ -286,7 +337,9 @@ export default function AdminPage() {
   };
 
   const getTypeIcon = (typeName: string) => {
-    const type = predefinedLocationTypes.find(t => t.name.toLowerCase() === typeName.toLowerCase());
+    const type = predefinedLocationTypes.find(
+      (t) => t.name.toLowerCase() === typeName.toLowerCase()
+    );
     return type ? type.icon : <MapPin className="h-4 w-4" />;
   };
 
@@ -300,7 +353,7 @@ export default function AdminPage() {
         >
           {/* Header */}
           <div className="mb-8">
-            <motion.h1 
+            <motion.h1
               className="text-4xl font-bold text-foreground mb-2"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -308,7 +361,7 @@ export default function AdminPage() {
             >
               Admin Dashboard
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-muted-foreground"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -347,28 +400,43 @@ export default function AdminPage() {
                   ) : (
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Location Name *</label>
+                        <label className="text-sm font-medium">
+                          Location Name *
+                        </label>
                         <Input
                           value={newLocation.name}
-                          onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
+                          onChange={(e) =>
+                            setNewLocation({
+                              ...newLocation,
+                              name: e.target.value,
+                            })
+                          }
                           placeholder="Enter location name"
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Type *</label>
                         <div className="relative" ref={dropdownRef}>
                           <button
                             type="button"
-                            onClick={() => setShowTypeDropdown(!showTypeDropdown)}
+                            onClick={() =>
+                              setShowTypeDropdown(!showTypeDropdown)
+                            }
                             className="w-full flex items-center justify-between px-3 py-2 border border-input bg-background rounded-md text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            <span className={newLocation.type ? "text-foreground" : "text-muted-foreground"}>
+                            <span
+                              className={
+                                newLocation.type
+                                  ? "text-foreground"
+                                  : "text-muted-foreground"
+                              }
+                            >
                               {newLocation.type || "Select location type"}
                             </span>
                             <ChevronDown className="h-4 w-4 text-muted-foreground" />
                           </button>
-                          
+
                           {showTypeDropdown && (
                             <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-auto">
                               <div className="p-1">
@@ -387,7 +455,10 @@ export default function AdminPage() {
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setNewLocation({ ...newLocation, type: "" });
+                                    setNewLocation({
+                                      ...newLocation,
+                                      type: "",
+                                    });
                                     setShowTypeDropdown(false);
                                   }}
                                   className="w-full text-left px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-muted-foreground"
@@ -399,43 +470,58 @@ export default function AdminPage() {
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {predefinedLocationTypes.length} predefined types available
+                          {predefinedLocationTypes.length} predefined types
+                          available
                         </p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="text-sm font-medium">City *</label>
                         <Input
                           value={newLocation.locatedCity}
-                          onChange={(e) => setNewLocation({ ...newLocation, locatedCity: e.target.value })}
+                          onChange={(e) =>
+                            setNewLocation({
+                              ...newLocation,
+                              locatedCity: e.target.value,
+                            })
+                          }
                           placeholder="Enter city name"
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Description *</label>
+                        <label className="text-sm font-medium">
+                          Description *
+                        </label>
                         <Textarea
                           value={newLocation.about}
-                          onChange={(e) => setNewLocation({ ...newLocation, about: e.target.value })}
+                          onChange={(e) =>
+                            setNewLocation({
+                              ...newLocation,
+                              about: e.target.value,
+                            })
+                          }
                           placeholder="Describe the location..."
                           rows={3}
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Image URL</label>
                         <Input
                           value={newLocation.unsplashImage}
-                          onChange={(e) => setNewLocation({ ...newLocation, unsplashImage: e.target.value })}
+                          onChange={(e) =>
+                            setNewLocation({
+                              ...newLocation,
+                              unsplashImage: e.target.value,
+                            })
+                          }
                           placeholder="Unsplash image URL"
                         />
                       </div>
-                      
+
                       <div className="flex gap-2">
-                        <Button
-                          onClick={handleAddLocation}
-                          className="flex-1"
-                        >
+                        <Button onClick={handleAddLocation} className="flex-1">
                           <Save className="h-4 w-4 mr-2" />
                           Save
                         </Button>
@@ -468,35 +554,48 @@ export default function AdminPage() {
                       <Edit className="h-5 w-5" />
                       Edit Location
                     </CardTitle>
-                    <CardDescription>
-                      Update location details
-                    </CardDescription>
+                    <CardDescription>Update location details</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Location Name *</label>
+                        <label className="text-sm font-medium">
+                          Location Name *
+                        </label>
                         <Input
                           value={editingLocation.name}
-                          onChange={(e) => setEditingLocation({ ...editingLocation, name: e.target.value })}
+                          onChange={(e) =>
+                            setEditingLocation({
+                              ...editingLocation,
+                              name: e.target.value,
+                            })
+                          }
                           placeholder="Enter location name"
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Type *</label>
                         <div className="relative" ref={editDropdownRef}>
                           <button
                             type="button"
-                            onClick={() => setShowEditTypeDropdown(!showEditTypeDropdown)}
+                            onClick={() =>
+                              setShowEditTypeDropdown(!showEditTypeDropdown)
+                            }
                             className="w-full flex items-center justify-between px-3 py-2 border border-input bg-background rounded-md text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            <span className={editingLocation.type ? "text-foreground" : "text-muted-foreground"}>
+                            <span
+                              className={
+                                editingLocation.type
+                                  ? "text-foreground"
+                                  : "text-muted-foreground"
+                              }
+                            >
                               {editingLocation.type || "Select location type"}
                             </span>
                             <ChevronDown className="h-4 w-4 text-muted-foreground" />
                           </button>
-                          
+
                           {showEditTypeDropdown && (
                             <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-auto">
                               <div className="p-1">
@@ -504,7 +603,9 @@ export default function AdminPage() {
                                   <button
                                     key={type.id}
                                     type="button"
-                                    onClick={() => handleEditTypeSelect(type.name)}
+                                    onClick={() =>
+                                      handleEditTypeSelect(type.name)
+                                    }
                                     className="w-full text-left px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex items-center gap-2"
                                   >
                                     {type.icon}
@@ -515,7 +616,10 @@ export default function AdminPage() {
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setEditingLocation({ ...editingLocation, type: "" });
+                                    setEditingLocation({
+                                      ...editingLocation,
+                                      type: "",
+                                    });
                                     setShowEditTypeDropdown(false);
                                   }}
                                   className="w-full text-left px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-muted-foreground"
@@ -527,50 +631,62 @@ export default function AdminPage() {
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {predefinedLocationTypes.length} predefined types available
+                          {predefinedLocationTypes.length} predefined types
+                          available
                         </p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="text-sm font-medium">City *</label>
                         <Input
                           value={editingLocation.locatedCity}
-                          onChange={(e) => setEditingLocation({ ...editingLocation, locatedCity: e.target.value })}
+                          onChange={(e) =>
+                            setEditingLocation({
+                              ...editingLocation,
+                              locatedCity: e.target.value,
+                            })
+                          }
                           placeholder="Enter city name"
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Description *</label>
+                        <label className="text-sm font-medium">
+                          Description *
+                        </label>
                         <Textarea
                           value={editingLocation.about}
-                          onChange={(e) => setEditingLocation({ ...editingLocation, about: e.target.value })}
+                          onChange={(e) =>
+                            setEditingLocation({
+                              ...editingLocation,
+                              about: e.target.value,
+                            })
+                          }
                           placeholder="Describe the location..."
                           rows={3}
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Image URL</label>
                         <Input
                           value={editingLocation.unsplashImage}
-                          onChange={(e) => setEditingLocation({ ...editingLocation, unsplashImage: e.target.value })}
+                          onChange={(e) =>
+                            setEditingLocation({
+                              ...editingLocation,
+                              unsplashImage: e.target.value,
+                            })
+                          }
                           placeholder="Unsplash image URL"
                         />
                       </div>
-                      
+
                       <div className="flex gap-2">
-                        <Button
-                          onClick={handleEditLocation}
-                          className="flex-1"
-                        >
+                        <Button onClick={handleEditLocation} className="flex-1">
                           <Save className="h-4 w-4 mr-2" />
                           Update
                         </Button>
-                        <Button
-                          variant="outline"
-                          onClick={cancelEditing}
-                        >
+                        <Button variant="outline" onClick={cancelEditing}>
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
@@ -586,20 +702,22 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Total Locations</span>
-                    <Badge variant="secondary">
-                      {locations.length}
-                    </Badge>
+                    <span className="text-sm text-muted-foreground">
+                      Total Locations
+                    </span>
+                    <Badge variant="secondary">{locations.length}</Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Location Types</span>
-                    <Badge variant="secondary">
-                      {locationTypes.length}
-                    </Badge>
+                    <span className="text-sm text-muted-foreground">
+                      Location Types
+                    </span>
+                    <Badge variant="secondary">{locationTypes.length}</Badge>
                   </div>
                   <Separator />
                   <div className="space-y-2">
-                    <span className="text-sm text-muted-foreground">Types:</span>
+                    <span className="text-sm text-muted-foreground">
+                      Types:
+                    </span>
                     <div className="flex flex-wrap gap-1">
                       {locationTypes.slice(0, 3).map((type) => (
                         <Badge key={type} variant="outline" className="text-xs">
@@ -660,7 +778,9 @@ export default function AdminPage() {
                     <div className="text-center py-8">
                       <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                       <p className="text-muted-foreground">
-                        {searchTerm ? "No locations found matching your search." : "No locations found."}
+                        {searchTerm
+                          ? "No locations found matching your search."
+                          : "No locations found."}
                       </p>
                     </div>
                   ) : (
@@ -675,7 +795,7 @@ export default function AdminPage() {
                           <div className="flex items-start gap-4">
                             <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
                               {location.unsplashImage ? (
-                                <img
+                                <Image
                                   src={location.unsplashImage}
                                   alt={location.name}
                                   className="w-full h-full object-cover"
@@ -684,7 +804,7 @@ export default function AdminPage() {
                                 <ImageIcon className="h-8 w-8 text-muted-foreground" />
                               )}
                             </div>
-                            
+
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0">
@@ -692,7 +812,10 @@ export default function AdminPage() {
                                     {location.name}
                                   </h3>
                                   <div className="flex items-center gap-2 mt-1">
-                                    <Badge variant="outline" className="text-xs flex items-center gap-1">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs flex items-center gap-1"
+                                    >
                                       {getTypeIcon(location.type)}
                                       {location.type}
                                     </Badge>
@@ -713,12 +836,17 @@ export default function AdminPage() {
                                     {location.about}
                                   </p>
                                 </div>
-                                
+
                                 <div className="flex gap-2 ml-4">
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => window.open(`/locations/${location.id}`, '_blank')}
+                                    onClick={() =>
+                                      window.open(
+                                        `/locations/${location.id}`,
+                                        "_blank"
+                                      )
+                                    }
                                   >
                                     <Eye className="h-4 w-4" />
                                   </Button>
@@ -732,7 +860,9 @@ export default function AdminPage() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleDeleteLocation(location.id)}
+                                    onClick={() =>
+                                      handleDeleteLocation(location.id)
+                                    }
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
@@ -752,4 +882,4 @@ export default function AdminPage() {
       </div>
     </div>
   );
-} 
+}

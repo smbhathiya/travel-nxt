@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { PrismaClient } from '@/lib/generated/prisma';
 
@@ -16,11 +16,14 @@ interface PredictedInterest {
   confidence: number;
 }
 
+// Define the type for the raw interest data from FastAPI
+type RawInterestData = [string, number];
+
 interface PredictionResponse {
-  top_interests: PredictedInterest[];
+  top_interests: RawInterestData[];
 }
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const { userId } = await auth();
     
@@ -101,8 +104,8 @@ export async function POST(request: NextRequest) {
           // Extract location types from predictions
           // FastAPI returns: [['location_type', confidence], ['location_type', confidence], ...]
           const predictedLocationTypes = predictionData.top_interests
-            .filter((interest: any) => Array.isArray(interest) && interest.length >= 2)
-            .map((interest: any) => interest[0]); // Get the location_type (first element)
+            .filter((interest: RawInterestData) => Array.isArray(interest) && interest.length >= 2)
+            .map((interest: RawInterestData) => interest[0]); // Get the location_type (first element)
 
           console.log('📍 [API Route] AI predicted location types:', predictedLocationTypes);
 
@@ -112,8 +115,8 @@ export async function POST(request: NextRequest) {
 
           // Transform predicted interests to match expected format
           predictedInterests = predictionData.top_interests
-            .filter((interest: any) => Array.isArray(interest) && interest.length >= 2)
-            .map((interest: any) => ({
+            .filter((interest: RawInterestData) => Array.isArray(interest) && interest.length >= 2)
+            .map((interest: RawInterestData) => ({
               location_type: interest[0],
               confidence: interest[1]
             }));
