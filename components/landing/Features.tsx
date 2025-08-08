@@ -1,6 +1,6 @@
 "use client";
 
-import { Brain, Heart, MapPin, Sparkles, TrendingUp, Users, Clock, Shield } from "lucide-react";
+import { Brain, Heart, MapPin, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
@@ -45,17 +45,6 @@ export function Features() {
     },
   };
 
-  const statsVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut" as const,
-      },
-    },
-  };
 
   return (
     <div className="container max-w-7xl mx-auto px-4 py-20">
@@ -79,7 +68,7 @@ export function Features() {
           className="text-xl sm:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed"
           variants={itemVariants}
         >
-          Our AI-powered platform revolutionizes how you discover Sri Lanka's hidden gems
+          Our AI-powered platform revolutionizes how you discover Sri Lanka&apots;s hidden gems
         </motion.p>
       </motion.div>
 

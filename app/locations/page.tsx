@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search, ArrowRight, Globe, Compass, Star } from "lucide-react";
+import { MapPin, Search, ArrowRight, Globe, Compass } from "lucide-react";
 import { Navbar } from "../../components/landing/Navbar";
 import { Footer } from "../../components/landing/Footer";
 import { LocationSearchPopover } from "@/components/locations/LocationSearchPopover";
@@ -14,7 +14,9 @@ import { motion } from "framer-motion";
 
 export default function LocationSearch() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [categoryLocations, setCategoryLocations] = useState<{ id: string; name: string }[]>([]);
+  const [categoryLocations, setCategoryLocations] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [categoryLoading, setCategoryLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -121,42 +123,37 @@ export default function LocationSearch() {
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
         </div>
 
-        <motion.div 
+        <motion.div
           className="container max-w-7xl mx-auto px-4 py-16"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
           {/* Hero Section */}
-          <motion.div 
-            className="text-center mb-16"
-            variants={itemVariants}
-          >
+          <motion.div className="text-center mb-16" variants={itemVariants}>
             <motion.div
               className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-3xl mb-6"
               whileHover={{ scale: 1.1, rotate: 5 }}
             >
               <Globe className="h-8 w-8 text-primary" />
             </motion.div>
-            
-            <motion.h1 
+
+            <motion.h1
               className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-8 text-foreground"
               variants={itemVariants}
             >
-              Explore{" "}
-              <span className="text-primary">
-                Destinations
-              </span>
+              Explore <span className="text-primary">Destinations</span>
             </motion.h1>
-            
-            <motion.p 
+
+            <motion.p
               className="text-xl sm:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed mb-12"
               variants={itemVariants}
             >
-              Search for destinations in Sri Lanka and discover details, ratings, and similar places
+              Search for destinations in Sri Lanka and discover details,
+              ratings, and similar places
             </motion.p>
 
-            <motion.div 
+            <motion.div
               className="max-w-2xl mx-auto relative"
               variants={itemVariants}
             >
@@ -164,8 +161,8 @@ export default function LocationSearch() {
                 fallback={
                   <div className="p-6 bg-card border border-border rounded-2xl">
                     <p className="text-center text-muted-foreground">
-                      Sorry, the search component couldn&apos;t be loaded. Please
-                      try refreshing the page.
+                      Sorry, the search component couldn&apos;t be loaded.
+                      Please try refreshing the page.
                     </p>
                   </div>
                 }
@@ -182,11 +179,8 @@ export default function LocationSearch() {
           </motion.div>
 
           {selectedCategory ? (
-            <motion.div 
-              className="space-y-8"
-              variants={containerVariants}
-            >
-              <motion.div 
+            <motion.div className="space-y-8" variants={containerVariants}>
+              <motion.div
                 className="flex justify-between items-center"
                 variants={itemVariants}
               >
@@ -195,10 +189,14 @@ export default function LocationSearch() {
                     {selectedCategory} Destinations
                   </h2>
                   <p className="text-muted-foreground">
-                    Discover amazing {selectedCategory.toLowerCase()} locations in Sri Lanka
+                    Discover amazing {selectedCategory.toLowerCase()} locations
+                    in Sri Lanka
                   </p>
                 </div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <Button
                     variant="outline"
                     onClick={() => router.push("/locations")}
@@ -210,33 +208,39 @@ export default function LocationSearch() {
                 </motion.div>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
                 variants={containerVariants}
               >
                 {categoryLoading ? (
-                  <motion.div 
+                  <motion.div
                     className="col-span-full text-center py-12"
                     variants={itemVariants}
                   >
                     <motion.div
                       className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-3xl mb-4"
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
                     >
                       <Search className="h-8 w-8 text-primary" />
                     </motion.div>
-                    <p className="text-muted-foreground text-lg">Loading locations...</p>
+                    <p className="text-muted-foreground text-lg">
+                      Loading locations...
+                    </p>
                   </motion.div>
                 ) : categoryLocations.length > 0 ? (
-                  categoryLocations.map((location, index) => (
+                  categoryLocations.map((location) => (
                     <motion.div
                       key={location.id}
                       variants={cardVariants}
-                      whileHover={{ 
-                        scale: 1.03, 
+                      whileHover={{
+                        scale: 1.03,
                         y: -8,
-                        transition: { duration: 0.3, ease: "easeOut" as const }
+                        transition: { duration: 0.3, ease: "easeOut" as const },
                       }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -261,8 +265,8 @@ export default function LocationSearch() {
                               </p>
                             </div>
                           </div>
-                          
-                          <motion.div 
+
+                          <motion.div
                             className="flex items-center justify-end"
                             whileHover={{ x: 5 }}
                           >
@@ -276,7 +280,7 @@ export default function LocationSearch() {
                     </motion.div>
                   ))
                 ) : (
-                  <motion.div 
+                  <motion.div
                     className="col-span-full text-center py-12"
                     variants={itemVariants}
                   >
@@ -290,29 +294,25 @@ export default function LocationSearch() {
                       No locations found
                     </h3>
                     <p className="text-muted-foreground">
-                      No locations found for this category. Try a different category.
+                      No locations found for this category. Try a different
+                      category.
                     </p>
                   </motion.div>
                 )}
               </motion.div>
             </motion.div>
           ) : (
-            <motion.div 
-              className="space-y-8"
-              variants={containerVariants}
-            >
-              <motion.div 
-                className="text-center"
-                variants={itemVariants}
-              >
+            <motion.div className="space-y-8" variants={containerVariants}>
+              <motion.div className="text-center" variants={itemVariants}>
                 <h2 className="text-3xl font-bold text-foreground mb-4">
                   Explore by Category
                 </h2>
                 <p className="text-muted-foreground max-w-2xl mx-auto">
-                  Browse destinations by category to find exactly what you're looking for
+                  Browse destinations by category to find exactly what
+                  you&apots;re looking for
                 </p>
               </motion.div>
-              
+
               <CategoryGrid />
             </motion.div>
           )}

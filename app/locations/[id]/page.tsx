@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, ArrowLeft, Bookmark, BookmarkCheck, Heart, Share2, ExternalLink, Mountain, Waves, Landmark, TreePine, Flower2, Shield, Trees, Church, Building2, Fish, Camera } from "lucide-react";
+import { MapPin, Star, ArrowLeft, Bookmark, BookmarkCheck, Heart, ExternalLink, Mountain, Waves, Landmark, TreePine, Flower2, Shield, Trees, Church, Building2, Fish, Camera } from "lucide-react";
 import { Navbar } from "../../../components/landing/Navbar";
 import { Footer } from "../../../components/landing/Footer";
 import { useRouter } from "next/navigation";

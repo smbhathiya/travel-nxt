@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,18 @@ import {
   Calendar,
   Clock
 } from "lucide-react";
+import Image from "next/image";
+
+interface UserProfile {
+  id: string;
+  clerkUserId: string;
+  name: string;
+  email: string;
+  introduction: string;
+  interests: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
@@ -38,23 +50,9 @@ export default function ProfilePage() {
     email: "",
     introduction: "",
   });
-  const [dbProfile, setDbProfile] = useState<any>(null);
+  const [dbProfile, setDbProfile] = useState<UserProfile | null>(null);
 
-  useEffect(() => {
-    if (isLoaded && user) {
-      // Initialize with Clerk data
-      setProfileData({
-        name: user.fullName || "",
-        email: user.primaryEmailAddress?.emailAddress || "",
-        introduction: "",
-      });
-      
-      // Fetch database profile
-      fetchProfile();
-    }
-  }, [isLoaded, user]);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       const result = await getUserProfile();
       if (result.success && result.user) {
@@ -74,7 +72,21 @@ export default function ProfilePage() {
         variant: "destructive",
       });
     }
-  };
+  }, [user?.fullName, user?.primaryEmailAddress?.emailAddress, toast]);
+
+  useEffect(() => {
+    if (isLoaded && user) {
+      // Initialize with Clerk data
+      setProfileData({
+        name: user.fullName || "",
+        email: user.primaryEmailAddress?.emailAddress || "",
+        introduction: "",
+      });
+      
+      // Fetch database profile
+      fetchProfile();
+    }
+  }, [isLoaded, user, fetchProfile]);
 
   const handleSave = async () => {
     if (!user) return;
@@ -242,7 +254,7 @@ export default function ProfilePage() {
                     <div className="relative">
                       <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
                         {user.imageUrl ? (
-                          <img
+                          <Image
                             src={user.imageUrl}
                             alt="Profile"
                             className="w-20 h-20 rounded-full object-cover"
