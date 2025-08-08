@@ -14,12 +14,10 @@ import {
   Check,
   Sparkles,
   Waves,
-  Mountain,
   Landmark,
   TreePine,
   Flower2,
-  Camera,
-  Shield,
+
   Trees,
   Church,
   Building2,
@@ -401,7 +399,7 @@ export default function InterestsPage() {
                 className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"
                 variants={containerVariants}
               >
-                {interests.map((interest, index) => (
+                {interests.map((interest) => (
                   <motion.div
                     key={interest.id}
                     variants={cardVariants}

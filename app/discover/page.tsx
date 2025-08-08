@@ -25,12 +25,8 @@ import {
   RefreshCw,
   Brain,
   Sparkles,
-  Zap,
   ArrowRight,
   Heart,
-  TrendingUp,
-  Users,
-  Globe,
 } from "lucide-react";
 import { Navbar } from "../../components/landing/Navbar";
 import { Footer } from "../../components/landing/Footer";
@@ -42,6 +38,7 @@ import {
   type PersonalizedRecommendation,
   type PredictedInterest 
 } from "@/features/find-destinations/actions";
+import Image from "next/image";
 
 export default function FindDestinationsPage() {
   const { user } = useUser();
@@ -589,7 +586,7 @@ export default function FindDestinationsPage() {
                             {/* Card Header with Image */}
                             <div className="relative h-48 bg-primary/10 overflow-hidden">
                               {rec.imageUrl ? (
-                                <img
+                                <Image
                                   src={rec.imageUrl}
                                   alt={rec.Location_Name}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
