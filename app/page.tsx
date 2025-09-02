@@ -17,19 +17,16 @@ export default function Home() {
     <div className="relative flex flex-col min-h-screen bg-transparent">
       <Navbar />
 
-      {/* Hero Section */}
       <section className="relative w-full flex-1 bg-transparent">
         <div className="relative bg-transparent">
           <Hero />
 
-          {/* Spacing */}
           <div className="h-4 sm:h-6" />
 
           {!isSignedIn && <HowItWorks />}
 
           <Features />
 
-          {/* Spacing */}
           <div className="h-16 sm:h-24" />
         </div>
       </section>
