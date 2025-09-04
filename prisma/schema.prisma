@@ -32,6 +32,7 @@ model User {
 model Bookmark {
   id           String   @id @default(cuid())
   userId       String
+  locationId   String?
   locationName String
   locatedCity  String
   locationType String
@@ -41,7 +42,8 @@ model Bookmark {
   
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  @@unique([userId, locationName, locatedCity])
+  // Prefer unique by user + locationId when available, fallback to name+city
+  @@unique([userId, locationId], map: "user_location_unique")
   @@map("bookmarks")
 }
 

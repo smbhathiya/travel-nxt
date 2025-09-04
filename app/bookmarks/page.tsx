@@ -26,6 +26,7 @@ interface BookmarkItem {
   locationType: string;
   rating: number;
   personalizedScore: number;
+  locationId?: string;
   createdAt: string;
 }
 
@@ -384,9 +385,28 @@ export default function BookmarksPage() {
                           variant="outline"
                           size="sm"
                           className="flex-1 border-border hover:border-border/60 rounded-full"
-                          onClick={() =>
-                            router.push(`/locations/${bookmark.id}`)
-                          }
+                          onClick={async () => {
+                            // Prefer locationId saved in bookmark
+                            if (bookmark.locationId) {
+                              router.push(`/locations/${bookmark.locationId}`);
+                              return;
+                            }
+                            // Fallback: try search by name
+                            try {
+                              const resp = await fetch(`/api/locations/search?q=${encodeURIComponent(bookmark.locationName)}`);
+                              if (resp.ok) {
+                                const results = await resp.json();
+                                if (Array.isArray(results) && results.length > 0 && results[0].id) {
+                                  router.push(`/locations/${results[0].id}`);
+                                  return;
+                                }
+                              }
+                            } catch (err) {
+                              console.error('Error resolving location for bookmark', err);
+                            }
+                            // Last resort: try to navigate using locationName (may 404)
+                            router.push(`/locations/${bookmark.id}`);
+                          }}
                         >
                           View Details
                         </Button>

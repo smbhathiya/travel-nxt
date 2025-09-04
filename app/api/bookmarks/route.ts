@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { locationName, locatedCity, locationType, rating, personalizedScore } = await request.json();
+  const { locationId, locationName, locatedCity, locationType, rating, personalizedScore } = await request.json();
 
     // Get the user record
     const user = await prisma.user.findUnique({
@@ -30,16 +30,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Create bookmark
-    const bookmark = await prisma.bookmark.create({
-      data: {
+      // Build data object and include locationId when provided.
+      // We temporarily disable the explicit-any lint rule here because the Prisma client
+      // types need to be regenerated after schema changes (`npx prisma generate`).
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const createData: any = {
         userId: user.id,
         locationName,
         locatedCity,
         locationType,
         rating,
         personalizedScore,
-      },
-    });
+      };
+      if (locationId) createData.locationId = locationId;
+
+      const bookmark = await prisma.bookmark.create({ data: createData });
 
     return NextResponse.json({ success: true, bookmark });
   } catch (error: unknown) {
@@ -111,7 +116,8 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const { locationName, locatedCity } = await request.json();
+  const body = await request.json();
+  const { id, locationId, locationName, locatedCity } = body;
 
     // Get the user record
     const user = await prisma.user.findUnique({
@@ -125,14 +131,15 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Delete bookmark
-    await prisma.bookmark.deleteMany({
-      where: {
-        userId: user.id,
-        locationName,
-        locatedCity,
-      },
-    });
+    // Delete bookmark by id if provided, otherwise by user + locationId or user + name+city
+    // Build where clause; use explicit any until Prisma client is regenerated.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const whereClause: any = { userId: user.id };
+    if (id) whereClause.id = id;
+    else if (locationId) whereClause.locationId = locationId;
+    else { whereClause.locationName = locationName; whereClause.locatedCity = locatedCity; }
+
+    await prisma.bookmark.deleteMany({ where: whereClause });
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -209,10 +209,11 @@ export default function FindDestinationsPage() {
           });
         }
       } else {
-        const response = await fetch("/api/bookmarks", {
+    const response = await fetch("/api/bookmarks", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+      locationId: rec.id,
             locationName: rec.Location_Name,
             locatedCity: rec.Located_City,
             locationType: rec.Location_Type,
