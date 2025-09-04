@@ -100,10 +100,10 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -111,7 +111,24 @@ export async function GET() {
       );
     }
 
-    // Get the user record
+    const url = new URL(request.url);
+    const locationId = url.searchParams.get('locationId');
+
+    // If caller asked for a specific locationId, return whether it's bookmarked
+    if (locationId) {
+      const user = await prisma.user.findUnique({ where: { clerkUserId: userId } });
+      if (!user) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      const bookmark = await prisma.bookmark.findFirst({
+        where: { userId: user.id, locationId }
+      });
+
+      return NextResponse.json({ bookmarked: !!bookmark, bookmark });
+    }
+
+    // Fallback: return all bookmarks for the user
     const user = await prisma.user.findUnique({
       where: { clerkUserId: userId },
       include: {
