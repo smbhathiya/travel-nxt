@@ -793,12 +793,13 @@ export default function AdminPage() {
                           className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
                         >
                           <div className="flex items-start gap-4">
-                            <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+                            <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center overflow-hidden relative">
                               {location.unsplashImage ? (
                                 <Image
                                   src={location.unsplashImage}
                                   alt={location.name}
-                                  className="w-full h-full object-cover"
+                                  fill
+                                  className="object-cover w-full h-full"
                                 />
                               ) : (
                                 <ImageIcon className="h-8 w-8 text-muted-foreground" />

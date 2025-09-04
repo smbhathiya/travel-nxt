@@ -589,7 +589,8 @@ export default function FindDestinationsPage() {
                                 <Image
                                   src={rec.imageUrl}
                                   alt={rec.Location_Name}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  fill
+                                  className="object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
                               ) : (
                                 <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
@@ -669,7 +670,7 @@ export default function FindDestinationsPage() {
                                    whileHover={{ scale: 1.02 }}
                                  >
                                    <Star className="h-4 w-4 fill-current" />
-                                   <span>{(rec.Sentiment_Score * 100).toFixed(0)}% positive</span>
+                                   <span>{(rec.Sentiment_Score * 100).toFixed(0)}% positive Reviews</span>
                                  </motion.div>
                               </div>
 
