@@ -172,27 +172,29 @@ export default function LocationSearch() {
             </motion.p>
 
             <motion.div
-              className="max-w-2xl mx-auto relative"
+              className="w-full max-w-2xl mx-auto relative"
               variants={itemVariants}
             >
-              <ErrorBoundary
-                fallback={
-                  <div className="p-6 bg-card border border-border rounded-2xl">
-                    <p className="text-center text-muted-foreground">
-                      Sorry, the search component couldn&apos;t be loaded.
-                      Please try refreshing the page.
-                    </p>
-                  </div>
-                }
-              >
-                <Suspense
-                  fallback={
-                    <div className="h-14 bg-card border border-border animate-pulse rounded-2xl"></div>
-                  }
-                >
-                  <LocationSearchPopover className="w-full" />
-                </Suspense>
-              </ErrorBoundary>
+                  <ErrorBoundary
+                    fallback={
+                      <div className="p-6 bg-card border border-border rounded-2xl">
+                        <p className="text-center text-muted-foreground">
+                          Sorry, the search component couldn&apos;t be loaded.
+                          Please try refreshing the page.
+                        </p>
+                      </div>
+                    }
+                  >
+                    <Suspense
+                      fallback={
+                        <div className="h-12 sm:h-14 bg-card border border-border animate-pulse rounded-2xl"></div>
+                      }
+                    >
+                      <div className="px-0 sm:px-4">
+                        <LocationSearchPopover className="w-full" />
+                      </div>
+                    </Suspense>
+                  </ErrorBoundary>
             </motion.div>
           </motion.div>
 
