@@ -67,26 +67,29 @@ export async function GET(
       },
       take: 6,
       include: {
-        _count: {
-          select: {
-            feedbacks: true
-          }
-        }
+        feedbacks: { select: { sentiment: true } },
+        _count: { select: { feedbacks: true } }
       }
     });
 
     console.log('🗺️ [Similar Locations API] Found similar locations:', similarLocations.length);
 
     // Transform to match the expected format
-    const formattedSimilarLocations: SimilarLocation[] = similarLocations.map(location => ({
-      Location_Name: location.name,
-      Located_City: location.locatedCity,
-      Location_Type: location.type,
-      Rating: location.overallRating,
-      similarity: 0.8, // Default similarity score since we're using same type
-      Sentiment: 'Positive',
-      Sentiment_Score: location.overallRating / 5
-    }));
+    const formattedSimilarLocations: SimilarLocation[] = similarLocations.map(location => {
+      const total = location.feedbacks?.length || 0;
+      const positiveCount = location.feedbacks?.filter(f => f.sentiment === 'Positive').length || 0;
+      const sentimentScore = total ? (positiveCount / total) : (location.overallRating / 5);
+
+      return {
+        Location_Name: location.name,
+        Located_City: location.locatedCity,
+        Location_Type: location.type,
+        Rating: location.overallRating,
+        similarity: 0.8,
+        Sentiment: 'Positive',
+        Sentiment_Score: sentimentScore
+      };
+    });
 
     console.log('🎉 [Similar Locations API] Returning similar locations:', formattedSimilarLocations.length);
     

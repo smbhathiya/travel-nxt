@@ -23,6 +23,11 @@ interface Feedback {
   locationId: string;
 }
 
+interface SentimentResult {
+  sentiment?: string;
+  confidence?: number;
+}
+
 export function FeedbackSection({ locationId, userId }: FeedbackSectionProps) {
   const { toast } = useToast();
   const [comment, setComment] = useState("");
@@ -32,19 +37,51 @@ export function FeedbackSection({ locationId, userId }: FeedbackSectionProps) {
   const [sentimentStats, setSentimentStats] = useState({ positive: 0, negative: 0 });
 
   useEffect(() => {
-    fetch(`/api/location-details/${locationId}`)
-      .then(res => res.json())
-      .then(data => {
-        setFeedbacks(data.feedbacks || []);
-        // Calculate sentiment stats
-        const total = data.feedbacks?.length || 0;
-        const positive = data.feedbacks?.filter((f: Feedback) => f.sentiment === "Positive").length || 0;
-        const negative = data.feedbacks?.filter((f: Feedback) => f.sentiment !== "Positive").length || 0;
-        setSentimentStats({
-          positive: total ? Math.round((positive / total) * 100) : 0,
-          negative: total ? Math.round((negative / total) * 100) : 0,
-        });
-      });
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/location-details/${locationId}`);
+        if (!mounted) return;
+        if (!res.ok) {
+          console.warn('Failed to fetch location details for feedbacks', res.status);
+          setFeedbacks([]);
+          setSentimentStats({ positive: 0, negative: 0 });
+          return;
+        }
+        const text = await res.text();
+        if (!mounted) return;
+        if (!text) {
+          setFeedbacks([]);
+          setSentimentStats({ positive: 0, negative: 0 });
+          return;
+        }
+        try {
+          const data = JSON.parse(text);
+          const fbs = data.feedbacks || [];
+          setFeedbacks(fbs);
+          // Calculate sentiment stats
+          const total = fbs.length || 0;
+          const positive = fbs.filter((f: Feedback) => f.sentiment === "Positive").length || 0;
+          const negative = total - positive;
+          setSentimentStats({
+            positive: total ? Math.round((positive / total) * 100) : 0,
+            negative: total ? Math.round((negative / total) * 100) : 0,
+          });
+        } catch (err) {
+          console.error('Invalid JSON for location details feedbacks', err, text);
+          setFeedbacks([]);
+          setSentimentStats({ positive: 0, negative: 0 });
+        }
+      } catch (err) {
+        console.error('Error fetching location details for feedbacks', err);
+        if (mounted) {
+          setFeedbacks([]);
+          setSentimentStats({ positive: 0, negative: 0 });
+        }
+      }
+    })();
+
+    return () => { mounted = false; };
   }, [locationId, submitting]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,12 +97,31 @@ export function FeedbackSection({ locationId, userId }: FeedbackSectionProps) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: comment }),
     });
-    const sentimentData = await sentimentRes.json();
     if (!sentimentRes.ok) {
-      toast({ title: "Sentiment analysis failed", description: sentimentData.error || "Try again later." });
+      const text = await sentimentRes.text().catch(() => '');
+      let errMsg = 'Try again later.';
+      try {
+        const parsed = text ? JSON.parse(text) : null;
+        errMsg = parsed?.error || errMsg;
+      } catch {}
+      toast({ title: "Sentiment analysis failed", description: errMsg });
       setSubmitting(false);
       return;
     }
+    const sentimentText = await sentimentRes.text();
+    let sentimentData: SentimentResult = {};
+    try {
+      sentimentData = sentimentText ? (JSON.parse(sentimentText) as SentimentResult) : {};
+    } catch (err) {
+      console.error('Invalid JSON from sentiment API', err, sentimentText);
+      toast({ title: 'Sentiment analysis failed', description: 'Invalid response from analysis service.' });
+      setSubmitting(false);
+      return;
+    }
+    const sentimentPayload = {
+      sentiment: sentimentData?.sentiment ?? 'Neutral',
+      confidence: typeof sentimentData?.confidence === 'number' ? sentimentData.confidence : 0,
+    };
     // Save feedback
     const feedbackRes = await fetch("/api/feedback", {
       method: "POST",
@@ -74,8 +130,8 @@ export function FeedbackSection({ locationId, userId }: FeedbackSectionProps) {
         locationId,
         userId,
         comment,
-        sentiment: sentimentData.sentiment,
-        confidence: sentimentData.confidence,
+        sentiment: sentimentPayload.sentiment,
+        confidence: sentimentPayload.confidence,
         rating,
       }),
     });

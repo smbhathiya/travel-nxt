@@ -94,11 +94,40 @@ export default function CategoryLocationsPage() {
 
   useEffect(() => {
     if (!categoryType) return;
+    let mounted = true;
     setLoading(true);
-    fetch(`/api/locations/by-category?category=${encodeURIComponent(categoryType)}`)
-      .then((res) => res.json())
-      .then((data) => setLocations(data))
-      .finally(() => setLoading(false));
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/locations/by-category?category=${encodeURIComponent(categoryType)}`);
+        if (!mounted) return;
+        if (!res.ok) {
+          console.warn('Failed to fetch category locations', res.status);
+          setLocations([]);
+          return;
+        }
+        const text = await res.text();
+        if (!mounted) return;
+        if (!text) {
+          setLocations([]);
+          return;
+        }
+        try {
+          const data = JSON.parse(text);
+          setLocations(Array.isArray(data) ? data : []);
+        } catch (err) {
+          console.error('Invalid JSON for category locations', err, text);
+          setLocations([]);
+        }
+      } catch (err) {
+        console.error('Error fetching category locations', err);
+        if (mounted) setLocations([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+
+    return () => { mounted = false; };
   }, [categoryType]);
 
   return (

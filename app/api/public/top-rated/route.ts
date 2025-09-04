@@ -19,26 +19,29 @@ export async function GET() {
       },
       take: 6,
       include: {
-        _count: {
-          select: {
-            feedbacks: true,
-          },
-        },
+        feedbacks: { select: { sentiment: true } },
+        _count: { select: { feedbacks: true } },
       },
     });
 
     console.log('✅ [Public Top Rated API] Found locations:', topRatedLocations.length);
 
     // Transform to match the expected format
-    const formattedLocations = topRatedLocations.map(location => ({
-      Location_Name: location.name,
-      Located_City: location.locatedCity,
-      Location_Type: location.type,
-      Rating: location.overallRating,
-      Sentiment: 'Positive', // Default sentiment
-      Sentiment_Score: location.overallRating / 5, // Normalize to 0-1 range
-      reviewCount: location._count?.feedbacks || 0
-    }));
+    const formattedLocations = topRatedLocations.map(location => {
+      const total = location.feedbacks?.length || 0;
+      const positiveCount = location.feedbacks?.filter(f => f.sentiment === 'Positive').length || 0;
+      const sentimentScore = total ? (positiveCount / total) : (location.overallRating / 5);
+
+      return {
+        Location_Name: location.name,
+        Located_City: location.locatedCity,
+        Location_Type: location.type,
+        Rating: location.overallRating,
+        Sentiment: 'Positive',
+        Sentiment_Score: sentimentScore,
+        reviewCount: total || (location._count?.feedbacks || 0)
+      };
+    });
 
     console.log('🎉 [Public Top Rated API] Returning formatted locations:', formattedLocations.length);
     

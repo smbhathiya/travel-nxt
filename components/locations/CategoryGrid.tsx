@@ -66,10 +66,48 @@ export default function CategoryGrid() {
   };
 
   useEffect(() => {
-    fetch("/api/locations/categories")
-      .then((res) => res.json())
-      .then((data) => setCategories(data))
-      .finally(() => setLoading(false));
+    let mounted = true;
+
+    (async () => {
+      try {
+        const res = await fetch("/api/locations/categories");
+
+        if (!mounted) return;
+
+        if (!res.ok) {
+          console.error("Failed to fetch categories:", res.status, res.statusText);
+          setCategories([]);
+          return;
+        }
+
+        const text = await res.text();
+
+        if (!mounted) return;
+
+        if (!text) {
+          // empty response body
+          setCategories([]);
+          return;
+        }
+
+        try {
+          const data = JSON.parse(text);
+          setCategories(Array.isArray(data) ? data : []);
+        } catch (err) {
+          console.error("Invalid JSON response for categories:", err, text);
+          setCategories([]);
+        }
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+        if (mounted) setCategories([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   if (loading) {

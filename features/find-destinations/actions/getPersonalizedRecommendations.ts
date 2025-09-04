@@ -143,6 +143,12 @@ export async function getPersonalizedRecommendations(): Promise<PersonalizedReco
       ],
       take: 8, // Increased to accommodate more interests
       include: {
+        // Include feedbacks so we can compute sentiment-based score (positive / total)
+        feedbacks: {
+          select: {
+            sentiment: true
+          }
+        },
         _count: {
           select: {
             feedbacks: true
@@ -160,17 +166,23 @@ export async function getPersonalizedRecommendations(): Promise<PersonalizedReco
     })));
 
     // Transform to match the expected format
-    const formattedRecommendations: PersonalizedRecommendation[] = recommendedLocations.map(location => ({
-      id: location.id,
-      Location_Name: location.name,
-      Located_City: location.locatedCity,
-      Location_Type: location.type,
-      Rating: location.overallRating,
-      Sentiment: 'Positive', // Default sentiment
-      Sentiment_Score: location.overallRating / 5, // Normalize to 0-1 range
-      reviewCount: location._count?.feedbacks || 0,
-      imageUrl: location.unsplashImage || '' // Add image URL
-    }));
+    const formattedRecommendations: PersonalizedRecommendation[] = recommendedLocations.map(location => {
+      const total = location.feedbacks?.length || 0;
+      const positiveCount = location.feedbacks?.filter(f => f.sentiment === 'Positive').length || 0;
+      const sentimentScore = total ? (positiveCount / total) : (location.overallRating / 5);
+
+      return {
+        id: location.id,
+        Location_Name: location.name,
+        Located_City: location.locatedCity,
+        Location_Type: location.type,
+        Rating: location.overallRating,
+        Sentiment: 'Positive', // Default sentiment
+        Sentiment_Score: sentimentScore, // Prefer sentiment-derived score, fallback to rating
+        reviewCount: total || (location._count?.feedbacks || 0),
+        imageUrl: location.unsplashImage || '' // Add image URL
+      };
+    });
 
     console.log('🎉 [AI Prediction] Final formatted recommendations:', formattedRecommendations);
 

@@ -45,17 +45,34 @@ export default function UserOnboardingModal() {
 
   useEffect(() => {
     if (!isLoaded || !user) return;
-    fetch(`/api/user/onboard?clerkUserId=${user.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data.exists) {
-          setForm({
-            introduction: "",
-            interests: [],
-          });
-          setOpen(true);
+    let mounted = true;
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/user/onboard?clerkUserId=${user.id}`);
+        if (!mounted) return;
+        if (!res.ok) {
+          console.warn('Onboard check returned non-ok', res.status);
+          return;
         }
-      });
+        const text = await res.text();
+        if (!mounted) return;
+        if (!text) return;
+        try {
+          const data = JSON.parse(text);
+          if (!data.exists) {
+            setForm({ introduction: "", interests: [] });
+            setOpen(true);
+          }
+        } catch (err) {
+          console.error('Invalid JSON from onboard check', err, text);
+        }
+      } catch (err) {
+        console.error('Error checking onboard status', err);
+      }
+    })();
+
+    return () => { mounted = false; };
   }, [isLoaded, user]);
 
   const handleChange = (
