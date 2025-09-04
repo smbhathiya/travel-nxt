@@ -116,7 +116,7 @@ export function LocationSearchPopover({
   return (
     <div className={cn("w-full max-w-2xl mx-auto", className)}>
       <Popover open={open} onOpenChange={safelyHandleChange}>
-        <form onSubmit={handleSearch} className="flex gap-3">
+        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <PopoverTrigger asChild>
               <motion.div
@@ -126,39 +126,39 @@ export function LocationSearchPopover({
                 <Button
                   variant="outline"
                   role="combobox"
-                  className="w-full justify-start text-left font-normal h-14 bg-card border border-border hover:border-border/60 rounded-2xl px-6 text-base"
+                  className="w-full justify-start text-left font-normal h-12 sm:h-14 bg-card border border-border hover:border-border/60 rounded-2xl px-4 sm:px-6 text-sm sm:text-base"
                 >
                   {searchQuery ? (
-                    <span className="flex items-center gap-3">
+                    <span className="flex items-center gap-3 truncate w-full">
                       <motion.div
-                        className="inline-flex items-center justify-center w-8 h-8 bg-primary/10 rounded-xl"
+                        className="inline-flex items-center justify-center w-7 h-7 bg-primary/10 rounded-xl flex-shrink-0"
                         whileHover={{ scale: 1.1, rotate: 5 }}
                       >
-                        <MapPin className="h-4 w-4 text-primary" />
+                        <MapPin className="h-3.5 w-3.5 text-primary" />
                       </motion.div>
-                      <span className="font-medium">{searchQuery}</span>
+                      <span className="font-medium truncate">{searchQuery}</span>
                     </span>
                   ) : (
-                    <span className="flex items-center gap-3 text-muted-foreground">
+                    <span className="flex items-center gap-3 text-muted-foreground truncate w-full">
                       <motion.div
-                        className="inline-flex items-center justify-center w-8 h-8 bg-muted rounded-xl"
+                        className="inline-flex items-center justify-center w-7 h-7 bg-muted rounded-xl flex-shrink-0"
                         whileHover={{ scale: 1.1, rotate: 5 }}
                       >
-                        <Compass className="h-4 w-4" />
+                        <Compass className="h-3.5 w-3.5" />
                       </motion.div>
-                      <span>Search for a destination...</span>
+                      <span className="truncate">Search for a destination...</span>
                     </span>
                   )}
                 </Button>
               </motion.div>
             </PopoverTrigger>
           </div>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="sm:shrink-0 w-full sm:w-auto">
             <Button 
               type="submit" 
-              className="h-14 px-8 bg-primary hover:bg-primary/90 rounded-2xl font-semibold"
+              className="h-10 sm:h-14 w-full sm:w-auto px-4 sm:px-8 bg-primary hover:bg-primary/90 rounded-2xl font-semibold text-sm sm:text-base"
             >
-              <Search className="h-5 w-5 mr-2" />
+              <Search className="h-4 w-4 mr-2" />
               Search
             </Button>
           </motion.div>
