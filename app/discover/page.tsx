@@ -461,68 +461,46 @@ export default function FindDestinationsPage() {
                        </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-3">
-                      {/* User Interests */}
+                    <div className="flex flex-wrap gap-2 items-start">
+                      {/* User Interests - show all and keep chips small on mobile */}
                       {userInterests.length > 0 && (
-                                                 <div className="flex items-center gap-2">
-                           <span className="text-sm font-medium text-muted-foreground">Your:</span>
-                           {userInterests.slice(0, 3).map((interest, idx) => (
-                             <motion.span
-                               key={`user-${idx}`}
-                               className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full border border-primary/20"
-                               initial={{ opacity: 0, scale: 0.8 }}
-                               animate={{ opacity: 1, scale: 1 }}
-                               transition={{ delay: idx * 0.1 }}
-                               whileHover={{ scale: 1.05, y: -2 }}
-                             >
-                               {getLocationIcon(interest)}
-                               {interest}
-                             </motion.span>
-                           ))}
-                           {userInterests.length > 3 && (
-                             <motion.span 
-                               className="inline-flex items-center px-3 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full border border-primary/20"
-                               initial={{ opacity: 0, scale: 0.8 }}
-                               animate={{ opacity: 1, scale: 1 }}
-                               transition={{ delay: 0.3 }}
-                             >
-                               +{userInterests.length - 3}
-                             </motion.span>
-                           )}
-                         </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="w-full sm:w-auto text-sm font-medium text-muted-foreground">Your:</span>
+                          {userInterests.map((interest, idx) => (
+                            <motion.span
+                              key={`user-${idx}`}
+                              className="inline-flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-2 bg-primary/10 text-primary text-xs sm:text-sm font-medium rounded-full border border-primary/20"
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: idx * 0.05 }}
+                              whileHover={{ scale: 1.03 }}
+                            >
+                              <span className="h-4 w-4 flex items-center justify-center">{getLocationIcon(interest)}</span>
+                              <span className="whitespace-nowrap">{interest}</span>
+                            </motion.span>
+                          ))}
+                        </div>
                       )}
 
-                      {/* AI Predicted Interests */}
+                      {/* AI Predicted Interests - show all and make chips compact */}
                       {usingPredictedInterests && predictedInterests.length > 0 && (
-                                                 <div className="flex items-center gap-2">
-                           <span className="text-sm font-medium text-muted-foreground">AI:</span>
-                           {predictedInterests.slice(0, 3).map((interest, idx) => (
-                             <motion.span
-                               key={`ai-${idx}`}
-                               className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/20 text-purple-700 dark:text-purple-300 text-sm font-medium rounded-full border border-purple-500/30"
-                               initial={{ opacity: 0, scale: 0.8 }}
-                               animate={{ opacity: 1, scale: 1 }}
-                               transition={{ delay: 0.4 + idx * 0.1 }}
-                               whileHover={{ scale: 1.05, y: -2 }}
-                             >
-                               <Sparkles className="h-4 w-4" />
-                               {interest.location_type}
-                               <span className="text-xs opacity-75">
-                                 {Math.round(interest.confidence * 100)}%
-                               </span>
-                             </motion.span>
-                           ))}
-                           {predictedInterests.length > 3 && (
-                             <motion.span 
-                               className="inline-flex items-center px-3 py-2 bg-purple-500/20 text-purple-700 dark:text-purple-300 text-sm font-medium rounded-full border border-purple-500/30"
-                               initial={{ opacity: 0, scale: 0.8 }}
-                               animate={{ opacity: 1, scale: 1 }}
-                               transition={{ delay: 0.7 }}
-                             >
-                               +{predictedInterests.length - 3}
-                             </motion.span>
-                           )}
-                         </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="w-full sm:w-auto text-sm font-medium text-muted-foreground">AI:</span>
+                          {predictedInterests.map((interest, idx) => (
+                            <motion.span
+                              key={`ai-${idx}`}
+                              className="inline-flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-2 bg-purple-500/20 text-purple-700 dark:text-purple-300 text-xs sm:text-sm font-medium rounded-full border border-purple-500/30"
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 0.05 + idx * 0.05 }}
+                              whileHover={{ scale: 1.03 }}
+                            >
+                              <Sparkles className="h-3 w-3" />
+                              <span className="whitespace-nowrap">{interest.location_type}</span>
+                              <span className="ml-1 text-[10px] opacity-80">{Math.round(interest.confidence * 100)}%</span>
+                            </motion.span>
+                          ))}
+                        </div>
                       )}
                     </div>
                   </div>
