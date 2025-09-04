@@ -209,16 +209,33 @@ export default function FindDestinationsPage() {
           });
         }
       } else {
-    const response = await fetch("/api/bookmarks", {
+        // Ensure we have a real locationId to store. If rec.id is missing, try to resolve via search.
+        let resolvedLocationId = rec.id;
+        if (!resolvedLocationId) {
+          try {
+            const searchResp = await fetch(`/api/locations/search?q=${encodeURIComponent(rec.Location_Name)}`);
+            if (searchResp.ok) {
+              const results = await searchResp.json();
+              if (Array.isArray(results) && results.length > 0 && results[0].id) {
+                resolvedLocationId = results[0].id;
+              }
+            }
+          } catch (err) {
+            console.warn('Failed to resolve location id for bookmark:', err);
+          }
+        }
+
+        const response = await fetch("/api/bookmarks", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-      locationId: rec.id,
+            // include locationId when available
+            ...(resolvedLocationId ? { locationId: resolvedLocationId } : {}),
             locationName: rec.Location_Name,
             locatedCity: rec.Located_City,
             locationType: rec.Location_Type,
-            rating: rec.Rating,
-            personalizedScore: rec.Sentiment_Score,
+            rating: Number(rec.Rating ?? 0),
+            personalizedScore: Number(rec.Sentiment_Score ?? 0),
           }),
         });
 
