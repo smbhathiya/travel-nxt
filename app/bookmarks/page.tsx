@@ -116,8 +116,16 @@ export default function BookmarksPage() {
 
   const handleRemoveBookmark = async (bookmarkId: string) => {
     try {
-      const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
+      const bk = bookmarks.find(b => b.id === bookmarkId);
+      if (!bk) {
+        toast({ title: "Error", description: "Bookmark not found", variant: "destructive" });
+        return;
+      }
+
+      const response = await fetch(`/api/bookmarks`, {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locationName: bk.locationName, locatedCity: bk.locatedCity }),
       });
 
       if (response.ok) {
@@ -127,7 +135,9 @@ export default function BookmarksPage() {
           description: "Bookmark removed successfully",
         });
       } else {
-        throw new Error("Failed to remove bookmark");
+        const errText = await response.text().catch(() => 'Failed to remove bookmark');
+        console.error('Failed to remove bookmark:', errText);
+        toast({ title: "Error", description: "Failed to remove bookmark", variant: "destructive" });
       }
     } catch (error) {
       console.error("Error removing bookmark:", error);
@@ -343,7 +353,7 @@ export default function BookmarksPage() {
                         <div className="flex items-center gap-1 px-2 py-1 bg-purple-500/10 rounded-full">
                           <Sparkles className="h-3 w-3 text-purple-600 dark:text-purple-400" />
                           <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
-                            {bookmark.personalizedScore.toFixed(1)}% match
+                            {(bookmark.personalizedScore * 100).toFixed(1)}% match
                           </span>
                         </div>
                         <div className="flex items-center gap-1 px-2 py-1 bg-blue-500/10 rounded-full">
