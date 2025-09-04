@@ -11,7 +11,6 @@ import {
   Heart,
   Calendar,
   ArrowRight,
-  Sparkles,
   Bookmark,
   MapPin,
   Star,
@@ -34,7 +33,7 @@ export default function BookmarksPage() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const { toast } = useToast();
-  
+
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -91,7 +90,7 @@ export default function BookmarksPage() {
         setIsLoading(false);
         return;
       }
-      
+
       setIsLoading(true);
       try {
         const response = await fetch("/api/bookmarks");
@@ -116,28 +115,43 @@ export default function BookmarksPage() {
 
   const handleRemoveBookmark = async (bookmarkId: string) => {
     try {
-      const bk = bookmarks.find(b => b.id === bookmarkId);
+      const bk = bookmarks.find((b) => b.id === bookmarkId);
       if (!bk) {
-        toast({ title: "Error", description: "Bookmark not found", variant: "destructive" });
+        toast({
+          title: "Error",
+          description: "Bookmark not found",
+          variant: "destructive",
+        });
         return;
       }
 
       const response = await fetch(`/api/bookmarks`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ locationName: bk.locationName, locatedCity: bk.locatedCity }),
+        body: JSON.stringify({
+          locationName: bk.locationName,
+          locatedCity: bk.locatedCity,
+        }),
       });
 
       if (response.ok) {
-        setBookmarks(prev => prev.filter(bookmark => bookmark.id !== bookmarkId));
+        setBookmarks((prev) =>
+          prev.filter((bookmark) => bookmark.id !== bookmarkId)
+        );
         toast({
           title: "Success",
           description: "Bookmark removed successfully",
         });
       } else {
-        const errText = await response.text().catch(() => 'Failed to remove bookmark');
-        console.error('Failed to remove bookmark:', errText);
-        toast({ title: "Error", description: "Failed to remove bookmark", variant: "destructive" });
+        const errText = await response
+          .text()
+          .catch(() => "Failed to remove bookmark");
+        console.error("Failed to remove bookmark:", errText);
+        toast({
+          title: "Error",
+          description: "Failed to remove bookmark",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Error removing bookmark:", error);
@@ -202,8 +216,11 @@ export default function BookmarksPage() {
                 <p className="text-muted-foreground mb-6">
                   Please sign in to view your bookmarks.
                 </p>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button 
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
                     onClick={() => router.push("/sign-in")}
                     className="bg-primary hover:bg-primary/90 rounded-full px-6 py-2"
                   >
@@ -245,39 +262,36 @@ export default function BookmarksPage() {
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
         </div>
 
-        <motion.div 
+        <motion.div
           className="container max-w-6xl mx-auto px-4 py-16"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
           {/* Header Section */}
-          <motion.div 
-            className="text-center mb-12"
-            variants={itemVariants}
-          >
+          <motion.div className="text-center mb-12" variants={itemVariants}>
             <motion.div
               className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-3xl mb-6"
               whileHover={{ scale: 1.1, rotate: 5 }}
             >
               <Bookmark className="h-8 w-8 text-primary" />
             </motion.div>
-            
+
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground">
               My Bookmarks
             </h1>
-            
+
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Your saved destinations and favorite places
             </p>
           </motion.div>
 
           {isLoading ? (
-            <motion.div 
-              className="space-y-8"
-              variants={containerVariants}
-            >
-              <motion.div className="flex items-center justify-center" variants={itemVariants}>
+            <motion.div className="space-y-8" variants={containerVariants}>
+              <motion.div
+                className="flex items-center justify-center"
+                variants={itemVariants}
+              >
                 <motion.div
                   className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-3xl"
                   animate={{ rotate: 360 }}
@@ -288,26 +302,27 @@ export default function BookmarksPage() {
               </motion.div>
             </motion.div>
           ) : bookmarks.length === 0 ? (
-            <motion.div 
-              className="text-center"
-              variants={itemVariants}
-            >
+            <motion.div className="text-center" variants={itemVariants}>
               <motion.div
                 className="inline-flex items-center justify-center w-24 h-24 bg-primary/10 rounded-3xl mb-6"
                 whileHover={{ scale: 1.1, rotate: 5 }}
               >
                 <Bookmark className="h-12 w-12 text-primary" />
               </motion.div>
-              
+
               <h3 className="text-2xl font-bold text-foreground mb-4">
                 No Bookmarks Yet
               </h3>
-              
+
               <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                Start exploring destinations and bookmark your favorite places to see them here.
+                Start exploring destinations and bookmark your favorite places
+                to see them here.
               </p>
-              
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 <Button
                   onClick={() => router.push("/locations")}
                   className="bg-primary hover:bg-primary/90 rounded-full px-8 py-3 text-lg font-semibold"
@@ -318,7 +333,7 @@ export default function BookmarksPage() {
               </motion.div>
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               variants={containerVariants}
             >
@@ -340,22 +355,22 @@ export default function BookmarksPage() {
                           </span>
                         </div>
                       </div>
-                      
+
                       <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
                         {bookmark.locationName}
                       </h3>
-                      
+
                       <p className="text-muted-foreground mb-4">
                         {bookmark.locatedCity}
                       </p>
-                      
+
                       <div className="flex items-center gap-2 mb-4">
-                        <div className="flex items-center gap-1 px-2 py-1 bg-purple-500/10 rounded-full">
+                        {/* <div className="flex items-center gap-1 px-2 py-1 bg-purple-500/10 rounded-full">
                           <Sparkles className="h-3 w-3 text-purple-600 dark:text-purple-400" />
                           <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
                             {(bookmark.personalizedScore * 100).toFixed(1)}% match
                           </span>
-                        </div>
+                        </div> */}
                         <div className="flex items-center gap-1 px-2 py-1 bg-blue-500/10 rounded-full">
                           <Calendar className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                           <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
@@ -363,13 +378,15 @@ export default function BookmarksPage() {
                           </span>
                         </div>
                       </div>
-                      
+
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           className="flex-1 border-border hover:border-border/60 rounded-full"
-                          onClick={() => router.push(`/locations/${bookmark.id}`)}
+                          onClick={() =>
+                            router.push(`/locations/${bookmark.id}`)
+                          }
                         >
                           View Details
                         </Button>
