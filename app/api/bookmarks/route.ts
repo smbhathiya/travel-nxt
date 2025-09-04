@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { PrismaClient } from '@/lib/generated/prisma';
+import { PrismaClient, Prisma } from '@/lib/generated/prisma';
 
 const prisma = new PrismaClient();
 
@@ -15,7 +15,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-  const { locationId, locationName, locatedCity, locationType, rating, personalizedScore } = await request.json();
+  const body = await request.json();
+  console.log('🔔 [Bookmarks API] POST body:', body);
+  const { locationId, locationName, locatedCity, locationType } = body;
+  // Coerce numeric fields and provide safe defaults
+  const rating = Number(body.rating ?? 0);
+  const personalizedScore = Number(body.personalizedScore ?? 0);
+
+  // Basic validation for required text fields
+  if (!locationName || !locatedCity || !locationType) {
+    return NextResponse.json({ error: 'Missing required bookmark fields' }, { status: 400 });
+  }
 
     // Get the user record
     const user = await prisma.user.findUnique({
@@ -49,19 +59,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, bookmark });
   } catch (error: unknown) {
     console.error('Error creating bookmark:', error);
-    
-    // Handle unique constraint violation (bookmark already exists)
-    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-      return NextResponse.json(
-        { error: 'Location already bookmarked' },
-        { status: 409 }
-      );
+
+    // Handle Prisma unique constraint error cleanly
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        return NextResponse.json({ error: 'Location already bookmarked' }, { status: 409 });
+      }
     }
-    
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
