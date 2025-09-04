@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
 
 export interface PersonalizedRecommendation {
+  id?: string;
   Location_Name: string;
   Located_City: string;
   Location_Type: string;
@@ -160,6 +161,7 @@ export async function getPersonalizedRecommendations(): Promise<PersonalizedReco
 
     // Transform to match the expected format
     const formattedRecommendations: PersonalizedRecommendation[] = recommendedLocations.map(location => ({
+      id: location.id,
       Location_Name: location.name,
       Located_City: location.locatedCity,
       Location_Type: location.type,

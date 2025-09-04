@@ -238,6 +238,36 @@ export default function FindDestinationsPage() {
     }
   };
 
+  const handleExplore = async (rec: PersonalizedRecommendation) => {
+    try {
+      // If recommendation already includes id, navigate directly
+      if (rec.id) {
+        router.push(`/locations/${rec.id}`);
+        return;
+      }
+
+      // Try to resolve location by name via search API
+      const searchResp = await fetch(`/api/locations/search?q=${encodeURIComponent(rec.Location_Name)}`);
+      if (searchResp.ok) {
+        const results = await searchResp.json();
+        if (Array.isArray(results) && results.length > 0 && results[0].id) {
+          router.push(`/locations/${results[0].id}`);
+          return;
+        }
+      }
+
+      // Fallback to Google search if no location id found
+      const searchQuery = `${rec.Location_Name} ${rec.Located_City} Sri Lanka tourist attractions`;
+      const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+      window.open(googleSearchUrl, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.error('Error resolving location for explore:', error);
+      const searchQuery = `${rec.Location_Name} ${rec.Located_City} Sri Lanka tourist attractions`;
+      const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+      window.open(googleSearchUrl, "_blank", "noopener,noreferrer");
+    }
+  };
+
   const handleManualRefresh = useCallback(() => {
     setRecommendationsFetched(false);
     setUsingPredictedInterests(false);
@@ -722,17 +752,7 @@ export default function FindDestinationsPage() {
                                      variant="outline"
                                      size="sm"
                                      className="w-full border-border hover:border-border/60"
-                                    onClick={() => {
-                                      const searchQuery = `${rec.Location_Name} ${rec.Located_City} Sri Lanka tourist attractions`;
-                                      const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(
-                                        searchQuery
-                                      )}`;
-                                      window.open(
-                                        googleSearchUrl,
-                                        "_blank",
-                                        "noopener,noreferrer"
-                                      );
-                                    }}
+                                    onClick={() => handleExplore(rec)}
                                   >
                                     <ExternalLink className="h-4 w-4 mr-2" />
                                     Explore
