@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider } from "../components/theme-provider";
+import { ClerkProvider } from "@clerk/nextjs";
+import { UserOnboarding } from "../components/UserOnboarding";
+import ClientLayout from "@/components/layout/client-layout";
+import RouteLoader from "@/components/layout/route-loader";
+import { ToasterProvider } from "@/components/ui/toaster-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,9 +19,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Smart Traveller - Discover Your Next Adventure",
+  title: "TravelNxt - Discover Sri Lanka",
   description:
-    "Find your perfect travel destination with personalized recommendations based on your preferences.",
+    "Get personalized travel recommendations for Sri Lanka based on your interests. Discover beaches, mountains, cultural sites, and more in the Pearl of the Indian Ocean.",
+  keywords: [
+    "Sri Lanka travel",
+    "AI travel recommendations",
+    "Sri Lanka destinations",
+    "travel planning",
+    "Sri Lanka tourism",
+    "personalized travel",
+  ],
+  openGraph: {
+    title: "TravelNxt - Discover Sri Lanka",
+    description:
+      "AI-powered travel recommendations for Sri Lanka based on your interests",
+    type: "website",
+    locale: "en_US",
+  },
 };
 
 export default function RootLayout({
@@ -29,14 +49,21 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        <ClerkProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <UserOnboarding>
+              <ClientLayout>
+                <RouteLoader>{children}</RouteLoader>
+              </ClientLayout>
+            </UserOnboarding>
+            <ToasterProvider />
+          </ThemeProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

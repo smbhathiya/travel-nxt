@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String     @id @default(cuid())
+  clerkUserId String     @unique
+  name        String
+  email       String
+  introduction String
+  interests   String[]   
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  bookmarks   Bookmark[]
+  feedbacks   Feedback[]
+
+  @@map("users")
+}
+
+model Bookmark {
+  id           String   @id @default(cuid())
+  userId       String
+  locationId   String?
+  locationName String
+  locatedCity  String
+  locationType String
+  rating       Float
+  personalizedScore Float
+  createdAt    DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Prefer unique by user + locationId when available, fallback to name+city
+  @@unique([userId, locationId], map: "user_location_unique")
+  @@map("bookmarks")
+}
+
+model Location {
+  id            String   @id @default(cuid())
+  name          String
+  type          String
+  locatedCity   String
+  about         String
+  overallRating Float   @default(0)
+  unsplashImage String
+  feedbacks     Feedback[]
+
+  @@map("locations")
+}
+
+model Feedback {
+  id         String   @id @default(cuid())
+  comment    String
+  sentiment  String   
+  confidence Float    
+  rating     Float?   
+  createdAt  DateTime @default(now())
+  userId     String
+  locationId String
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@map("feedbacks")
+}
